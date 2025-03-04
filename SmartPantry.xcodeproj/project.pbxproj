@@ -6,6 +6,11 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		7774F9C22D5B7D620042A024 /* README.md in Resources */ = {isa = PBXBuildFile; fileRef = 7774F9C12D5B7D540042A024 /* README.md */; };
+		7774F9C42D5B7D920042A024 /* .gitignore in Resources */ = {isa = PBXBuildFile; fileRef = 7774F9C32D5B7D870042A024 /* .gitignore */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		77EE74A72D5AACC4004BAA13 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -24,6 +29,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		7774F9C12D5B7D540042A024 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		7774F9C32D5B7D870042A024 /* .gitignore */ = {isa = PBXFileReference; lastKnownFileType = text; path = .gitignore; sourceTree = "<group>"; };
 		77EE74962D5AACC3004BAA13 /* SmartPantry.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SmartPantry.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		77EE74A62D5AACC4004BAA13 /* SmartPantryTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SmartPantryTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		77EE74B02D5AACC5004BAA13 /* SmartPantryUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SmartPantryUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -75,6 +82,8 @@
 		77EE748D2D5AACC3004BAA13 = {
 			isa = PBXGroup;
 			children = (
+				7774F9C32D5B7D870042A024 /* .gitignore */,
+				7774F9C12D5B7D540042A024 /* README.md */,
 				77EE74982D5AACC3004BAA13 /* SmartPantry */,
 				77EE74A92D5AACC4004BAA13 /* SmartPantryTests */,
 				77EE74B32D5AACC5004BAA13 /* SmartPantryUITests */,
@@ -212,6 +221,8 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				7774F9C42D5B7D920042A024 /* .gitignore in Resources */,
+				7774F9C22D5B7D620042A024 /* README.md in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
