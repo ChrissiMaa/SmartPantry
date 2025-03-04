@@ -18,7 +18,10 @@ struct ShoppingListView: View {
         NavigationStack {
             List {
                 ForEach(shoppingLists) {shoppingList in
-                    Text(shoppingList.name)
+                    NavigationLink(value: shoppingList) {
+                        Text(shoppingList.name)
+                    }
+                    
                 }
             }
             .toolbar {
@@ -27,6 +30,10 @@ struct ShoppingListView: View {
                 }
             }
             .navigationTitle("Einkaufslisten")
+            .navigationDestination(for: ShoppingList.self) {
+                shoppingList in
+                ShoppingListDetailView(shoppingList: shoppingList)
+            }
         }
     }
 }

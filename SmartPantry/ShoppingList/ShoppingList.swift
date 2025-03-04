@@ -12,7 +12,18 @@ import SwiftData
 class ShoppingList {
     
     var name: String
-    //var items: [String]
+    @Relationship(deleteRule: .cascade) var shoppingItems: [ShoppingItem] //Relationship zu anderem Model für Swift-Data deklarieren. deleteRule löscht alle Items, wenn Liste gelöscht wird
+    
+    init(name: String) {
+        self.name = name
+        shoppingItems = []
+    }
+}
+
+@Model
+class ShoppingItem {
+    var name: String
+    //var quantity: Int
     
     init(name: String) {
         self.name = name

@@ -14,7 +14,8 @@ struct SmartPantryApp: App {
         WindowGroup {
             ContentView()
                 .modelContainer(for: [
-                    ShoppingList.self
+                    ShoppingList.self,
+                    ShoppingItem.self
                 ])
         }
     }
