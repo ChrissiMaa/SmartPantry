@@ -24,6 +24,7 @@ class ShoppingList {
 class ShoppingItem {
     var name: String
     //var quantity: Int
+    var isChecked: Bool = false
     
     init(name: String) {
         self.name = name

@@ -19,19 +19,34 @@ struct ShoppingListDetailView: View {
     
     var body: some View {
         List {
-            ForEach(shoppingList.shoppingItems) { item in
-                Text(item.name)
-                    .swipeActions {
-                        Button("Löschen", role: .destructive) {
-                            let index = shoppingList.shoppingItems.firstIndex(where: { shoppingItem in
-                                shoppingItem.id == item.id
-                            })
-                            if let index = index {
-                                let deletedShoppingItem = shoppingList.shoppingItems.remove(at: index)
-                                modelContext.delete(deletedShoppingItem)
-                            }
+            ForEach($shoppingList.shoppingItems) { $item in
+                HStack {
+                    Button(action: {
+                        item.isChecked.toggle()
+                    }, label: {
+                        HStack {
+                            Image(systemName: item.isChecked ? "checkmark.circle" : "circle")
+                                .foregroundColor(item.isChecked ? .black : .black)
+                                .font(.title2)
+                            Text(item.name)
+                                .strikethrough(item.isChecked, color: .gray)
+                                .foregroundColor(.black)
+                        }
+                        
+                    })
+                    
+                }
+                .swipeActions {
+                    Button("Löschen", role: .destructive) {
+                        let index = shoppingList.shoppingItems.firstIndex(where: { shoppingItem in
+                            shoppingItem.id == item.id
+                        })
+                        if let index = index {
+                            let deletedShoppingItem = shoppingList.shoppingItems.remove(at: index)
+                            modelContext.delete(deletedShoppingItem)
                         }
                     }
+                }
             }
             TextField("Neu", text: $newItem)
                 .onSubmit {
