@@ -21,6 +21,11 @@ struct ShoppingListView: View {
                     NavigationLink(value: shoppingList) {
                         Text(shoppingList.name)
                     }
+                    .swipeActions {
+                        Button("Löschen", role: .destructive) {
+                            modelContext.delete(shoppingList)
+                        }
+                    }
                     
                 }
             }

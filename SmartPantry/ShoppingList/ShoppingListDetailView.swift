@@ -11,7 +11,7 @@ import SwiftData
 
 struct ShoppingListDetailView: View {
     
-    @Bindable var shoppingList: ShoppingList
+    @Bindable var shoppingList: ShoppingList //Bindable weil wir shoppingList bearbeiten
     
     @State private var newItem: String = ""
     
@@ -21,9 +21,17 @@ struct ShoppingListDetailView: View {
         List {
             ForEach(shoppingList.shoppingItems) { item in
                 Text(item.name)
-                //Spacer()
-                //Text("Anzahl: \(shoppingItem.quantity)")
-                
+                    .swipeActions {
+                        Button("Löschen", role: .destructive) {
+                            let index = shoppingList.shoppingItems.firstIndex(where: { shoppingItem in
+                                shoppingItem.id == item.id
+                            })
+                            if let index = index {
+                                let deletedShoppingItem = shoppingList.shoppingItems.remove(at: index)
+                                modelContext.delete(deletedShoppingItem)
+                            }
+                        }
+                    }
             }
             TextField("Neu", text: $newItem)
                 .onSubmit {
@@ -34,11 +42,7 @@ struct ShoppingListDetailView: View {
             
         }
         .navigationTitle(shoppingList.name)
-        .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                
-            }
-        }
+       //hier ggf. toolbar
     }
 }
 
