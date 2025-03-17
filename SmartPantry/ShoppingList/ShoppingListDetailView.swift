@@ -14,51 +14,76 @@ struct ShoppingListDetailView: View {
     @Bindable var shoppingList: ShoppingList //Bindable weil wir shoppingList bearbeiten
     
     @State private var newItem: String = ""
+    @State private var selectedItems = Set<String>()
+    @State private var editMode: EditMode = .active
     
     @Environment(\.modelContext) var modelContext
     
     var body: some View {
-        List {
-            ForEach($shoppingList.shoppingItems) { $item in
-                HStack {
-                    Button(action: {
-                        item.isChecked.toggle()
-                    }, label: {
-                        HStack {
-                            Image(systemName: item.isChecked ? "checkmark.circle" : "circle")
-                                .foregroundColor(item.isChecked ? .black : .black)
-                                .font(.title2)
-                            Text(item.name)
-                                .strikethrough(item.isChecked, color: .gray)
-                                .foregroundColor(.black)
-                        }
-                        
-                    })
-                    
-                }
-                .swipeActions {
-                    Button("Löschen", role: .destructive) {
-                        let index = shoppingList.shoppingItems.firstIndex(where: { shoppingItem in
-                            shoppingItem.id == item.id
+        NavigationView {
+            List (selection: $selectedItems) {
+                ForEach($shoppingList.shoppingItems) { $item in
+                        Button(action: {
+                            item.isChecked.toggle()
+                        }, label: {
+                            //HStack {
+                                //Image(systemName: item.isChecked ? "checkmark.circle" : "circle")
+                                //.foregroundColor(item.isChecked ? .black : .black)
+                                //.font(.title2)
+                                Text(item.name)
+                                    .strikethrough(item.isChecked, color: .gray)
+                                    
+                            //}
+                            
                         })
-                        if let index = index {
-                            let deletedShoppingItem = shoppingList.shoppingItems.remove(at: index)
-                            modelContext.delete(deletedShoppingItem)
+                    .swipeActions {
+                        Button("Löschen", role: .destructive) {
+                            let index = shoppingList.shoppingItems.firstIndex(where: { shoppingItem in
+                                shoppingItem.id == item.id
+                            })
+                            if let index = index {
+                                let deletedShoppingItem = shoppingList.shoppingItems.remove(at: index)
+                                modelContext.delete(deletedShoppingItem)
+                            }
                         }
                     }
                 }
+                //.onDelete(perform: { IndexSet in
+                //    shoppingList.shoppingItems.remove(atOffsets: IndexSet)
+                //})
+                
+                TextField("Neu", text: $newItem)
+                    .onSubmit {
+                        let newShoppingItem = ShoppingItem(name: newItem)
+                        shoppingList.shoppingItems.append(newShoppingItem)
+                        newItem = ""
+                    }
+                
             }
-            TextField("Neu", text: $newItem)
-                .onSubmit {
-                    let newShoppingItem = ShoppingItem(name: newItem)
-                    shoppingList.shoppingItems.append(newShoppingItem)
-                    newItem = ""
+            .navigationTitle(shoppingList.name)
+            .environment(\.editMode, $editMode)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(action: {
+                        if editMode == .active {
+                            editMode = .inactive
+                        } else {
+                            editMode = .active
+                        }
+                        print(editMode)
+                    }) {
+                        Text(editMode == .active ? "Fertig" : "Bearbeiten")
+                        }
                 }
+                
+            }
             
         }
-        .navigationTitle(shoppingList.name)
-       //hier ggf. toolbar
     }
+}
+
+func deleteSelectedItems(at offsets: IndexSet) {
+    
 }
 
 #Preview {
