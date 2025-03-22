@@ -10,25 +10,36 @@ import SwiftUI
 
 struct MultiselectionTest: View {
     
-    @Bindable var shoppingList: ShoppingList
+    @Bindable var shoppingList: ShoppingList //Bindable weil wir shoppingList bearbeiten
     @State private var selectedItems = Set<UUID>()
     
     @Environment(\.editMode) private var editMode
     @State private var newItem: String = ""
-    
     
     @Environment(\.modelContext) var modelContext
     
     var body: some View {
         NavigationView {
             List (selection: $selectedItems) {
-                ForEach(shoppingList.shoppingItems) { item in
+                ForEach(shoppingList.shoppingItems, id: \.id) { item in
                     Button(action: {
                         item.isChecked.toggle()
                     }, label: {
                         Text(item.name)
+                            .foregroundStyle(item.isChecked ? Color.gray : Color.primary)
                             .strikethrough(item.isChecked, color: .gray)
                     })
+                    .swipeActions {
+                        Button("Löschen", role: .destructive) {
+                            let index = shoppingList.shoppingItems.firstIndex(where: { shoppingItem in
+                                shoppingItem.id == item.id
+                            })
+                            if let index = index {
+                                let deletedShoppingItem = shoppingList.shoppingItems.remove(at: index)
+                                modelContext.delete(deletedShoppingItem)
+                            }
+                        }
+                    }
                 }
                 TextField("Neu", text: $newItem)
                     .onSubmit {
@@ -53,4 +64,12 @@ struct MultiselectionTest: View {
         }
         
     }
+}
+
+#Preview {
+    @Previewable @State var shoppingList = ShoppingList(name: "Test") //Durch Previewable ist @State Variable im Preview-Makro nutzbar
+    NavigationStack {
+        ShoppingListDetailView(shoppingList: shoppingList)
+    }
+    
 }
