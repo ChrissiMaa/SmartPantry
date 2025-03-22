@@ -12,30 +12,24 @@ import SwiftData
 struct ShoppingListDetailView: View {
     
     @Bindable var shoppingList: ShoppingList //Bindable weil wir shoppingList bearbeiten
+    @State private var selectedItems = Set<UUID>()
     
+    @Environment(\.editMode) private var editMode
     @State private var newItem: String = ""
-    @State private var selectedItems = Set<String>()
-    @State private var editMode: EditMode = .active
     
     @Environment(\.modelContext) var modelContext
     
     var body: some View {
         NavigationView {
             List (selection: $selectedItems) {
-                ForEach($shoppingList.shoppingItems) { $item in
-                        Button(action: {
-                            item.isChecked.toggle()
-                        }, label: {
-                            //HStack {
-                                //Image(systemName: item.isChecked ? "checkmark.circle" : "circle")
-                                //.foregroundColor(item.isChecked ? .black : .black)
-                                //.font(.title2)
-                                Text(item.name)
-                                    .strikethrough(item.isChecked, color: .gray)
-                                    
-                            //}
-                            
-                        })
+                ForEach(shoppingList.shoppingItems, id: \.id) { item in
+                    Button(action: {
+                        item.isChecked.toggle()
+                    }, label: {
+                        Text(item.name)
+                            .foregroundStyle(item.isChecked ? Color.gray : Color.primary)
+                            .strikethrough(item.isChecked, color: .gray)
+                    })
                     .swipeActions {
                         Button("Löschen", role: .destructive) {
                             let index = shoppingList.shoppingItems.firstIndex(where: { shoppingItem in
@@ -48,43 +42,32 @@ struct ShoppingListDetailView: View {
                         }
                     }
                 }
-                //.onDelete(perform: { IndexSet in
-                //    shoppingList.shoppingItems.remove(atOffsets: IndexSet)
-                //})
-                
                 TextField("Neu", text: $newItem)
                     .onSubmit {
                         let newShoppingItem = ShoppingItem(name: newItem)
                         shoppingList.shoppingItems.append(newShoppingItem)
                         newItem = ""
                     }
-                
             }
             .navigationTitle(shoppingList.name)
-            .environment(\.editMode, $editMode)
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
+                ToolbarItemGroup {
+                    EditButton()
                     Button(action: {
-                        if editMode == .active {
-                            editMode = .inactive
-                        } else {
-                            editMode = .active
+                        shoppingList.shoppingItems.removeAll { item in
+                            selectedItems.contains(item.id)
                         }
-                        print(editMode)
-                    }) {
-                        Text(editMode == .active ? "Fertig" : "Bearbeiten")
-                        }
+                    }, label: {
+                        Image(systemName: "trash")
+                    })
                 }
-                
             }
-            
         }
+        
     }
 }
 
-func deleteSelectedItems(at offsets: IndexSet) {
-    
-}
+
 
 #Preview {
     @Previewable @State var shoppingList = ShoppingList(name: "Test") //Durch Previewable ist @State Variable im Preview-Makro nutzbar

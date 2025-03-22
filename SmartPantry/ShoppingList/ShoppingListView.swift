@@ -37,8 +37,7 @@ struct ShoppingListView: View {
             .navigationTitle("Einkaufslisten")
             .navigationDestination(for: ShoppingList.self) {
                 shoppingList in
-                //ShoppingListDetailView(shoppingList: shoppingList)
-                MultiselectionTest(shoppingList: shoppingList)
+                ShoppingListDetailView(shoppingList: shoppingList)
             }
         }
     }
