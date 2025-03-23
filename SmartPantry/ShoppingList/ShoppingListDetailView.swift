@@ -22,32 +22,70 @@ struct ShoppingListDetailView: View {
     var body: some View {
         NavigationView {
             List (selection: $selectedItems) {
-                ForEach(shoppingList.shoppingItems, id: \.id) { item in
-                    Button(action: {
-                        item.isChecked.toggle()
-                    }, label: {
-                        Text(item.name)
-                            .foregroundStyle(item.isChecked ? Color.gray : Color.primary)
-                            .strikethrough(item.isChecked, color: .gray)
-                    })
-                    .swipeActions {
-                        Button("Löschen", role: .destructive) {
-                            let index = shoppingList.shoppingItems.firstIndex(where: { shoppingItem in
-                                shoppingItem.id == item.id
+                let index = shoppingList.shoppingItems.partition(by: {
+                    $0.isChecked
+                })
+                let uncheckedItems = shoppingList.shoppingItems[..<index]
+                let checkedItems = shoppingList.shoppingItems[index...]
+                
+                Section(header: Text("Unchecked Items")) {
+                    ForEach(uncheckedItems, id: \.id) { item in
+                        Button(action: {
+                            item.isChecked.toggle()
+                            _ = shoppingList.shoppingItems.partition(by: {
+                                $0.isChecked
                             })
-                            if let index = index {
-                                let deletedShoppingItem = shoppingList.shoppingItems.remove(at: index)
-                                modelContext.delete(deletedShoppingItem)
+                        }, label: {
+                            Text(item.name)
+                                .foregroundStyle(item.isChecked ? Color.gray : Color.primary)
+                                .strikethrough(item.isChecked, color: .gray)
+                        })
+                        .swipeActions {
+                            Button("Löschen", role: .destructive) {
+                                let index = shoppingList.shoppingItems.firstIndex(where: { shoppingItem in
+                                    shoppingItem.id == item.id
+                                })
+                                if let index = index {
+                                    let deletedShoppingItem = shoppingList.shoppingItems.remove(at: index)
+                                    modelContext.delete(deletedShoppingItem)
+                                }
+                            }
+                        }
+                    }
+                    TextField("Neu", text: $newItem)
+                        .onSubmit {
+                            let newShoppingItem = ShoppingItem(name: newItem)
+                            shoppingList.shoppingItems.append(newShoppingItem)
+                            newItem = ""
+                        }
+                        .submitLabel(.done)
+                }
+                Section(header: Text("Checked Items")) {
+                    ForEach(checkedItems, id: \.id) { item in
+                        Button(action: {
+                            item.isChecked.toggle()
+                            _ = shoppingList.shoppingItems.partition(by: {
+                                $0.isChecked
+                            })
+                        }, label: {
+                            Text(item.name)
+                                .foregroundStyle(item.isChecked ? Color.gray : Color.primary)
+                                .strikethrough(item.isChecked, color: .gray)
+                        })
+                        .swipeActions {
+                            Button("Löschen", role: .destructive) {
+                                let index = shoppingList.shoppingItems.firstIndex(where: { shoppingItem in
+                                    shoppingItem.id == item.id
+                                })
+                                if let index = index {
+                                    let deletedShoppingItem = shoppingList.shoppingItems.remove(at: index)
+                                    modelContext.delete(deletedShoppingItem)
+                                }
                             }
                         }
                     }
                 }
-                TextField("Neu", text: $newItem)
-                    .onSubmit {
-                        let newShoppingItem = ShoppingItem(name: newItem)
-                        shoppingList.shoppingItems.append(newShoppingItem)
-                        newItem = ""
-                    }
+                
             }
             .navigationTitle(shoppingList.name)
             .toolbar {
@@ -66,7 +104,6 @@ struct ShoppingListDetailView: View {
         
     }
 }
-
 
 
 #Preview {
