@@ -21,7 +21,7 @@ struct ShoppingListDetailView: View {
     
     var body: some View {
         NavigationView {
-            List (selection: $selectedItems) {
+            List(selection: $selectedItems) {
                 let index = shoppingList.shoppingItems.partition(by: {
                     $0.isChecked
                 })
@@ -30,63 +30,25 @@ struct ShoppingListDetailView: View {
                 
                 Section(header: Text("Unchecked Items")) {
                     ForEach(uncheckedItems, id: \.id) { item in
-                        Button(action: {
-                            item.isChecked.toggle()
-                            _ = shoppingList.shoppingItems.partition(by: {
-                                $0.isChecked
-                            })
-                        }, label: {
-                            Text(item.name)
-                                .foregroundStyle(item.isChecked ? Color.gray : Color.primary)
-                                .strikethrough(item.isChecked, color: .gray)
-                        })
-                        .swipeActions {
-                            Button("Löschen", role: .destructive) {
-                                let index = shoppingList.shoppingItems.firstIndex(where: { shoppingItem in
-                                    shoppingItem.id == item.id
-                                })
-                                if let index = index {
-                                    let deletedShoppingItem = shoppingList.shoppingItems.remove(at: index)
-                                    modelContext.delete(deletedShoppingItem)
-                                }
-                            }
-                        }
+                        ShoppingItemButton(item: item)
                     }
-                    TextField("Neu", text: $newItem)
-                        .onSubmit {
-                            let newShoppingItem = ShoppingItem(name: newItem)
-                            shoppingList.shoppingItems.append(newShoppingItem)
-                            newItem = ""
-                        }
-                        .submitLabel(.done)
                 }
+                /*
+                TextField("Neu", text: $newItem)
+                    .onSubmit {
+                        let newShoppingItem = ShoppingItem(name: newItem)
+                        shoppingList.shoppingItems.append(newShoppingItem)
+                        newItem = ""
+                    }
+                    .submitLabel(.done)
+                   */
                 Section(header: Text("Checked Items")) {
                     ForEach(checkedItems, id: \.id) { item in
-                        Button(action: {
-                            item.isChecked.toggle()
-                            _ = shoppingList.shoppingItems.partition(by: {
-                                $0.isChecked
-                            })
-                        }, label: {
-                            Text(item.name)
-                                .foregroundStyle(item.isChecked ? Color.gray : Color.primary)
-                                .strikethrough(item.isChecked, color: .gray)
-                        })
-                        .swipeActions {
-                            Button("Löschen", role: .destructive) {
-                                let index = shoppingList.shoppingItems.firstIndex(where: { shoppingItem in
-                                    shoppingItem.id == item.id
-                                })
-                                if let index = index {
-                                    let deletedShoppingItem = shoppingList.shoppingItems.remove(at: index)
-                                    modelContext.delete(deletedShoppingItem)
-                                }
-                            }
-                        }
+                        ShoppingItemButton(item: item)
                     }
                 }
-                
             }
+            .environment(shoppingList)
             .navigationTitle(shoppingList.name)
             .toolbar {
                 ToolbarItemGroup {
