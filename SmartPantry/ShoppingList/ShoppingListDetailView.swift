@@ -22,26 +22,22 @@ struct ShoppingListDetailView: View {
     var body: some View {
         NavigationView {
             List(selection: $selectedItems) {
-                let index = shoppingList.shoppingItems.partition(by: {
-                    $0.isChecked
-                })
-                let uncheckedItems = shoppingList.shoppingItems[..<index]
-                let checkedItems = shoppingList.shoppingItems[index...]
+                let uncheckedItems = shoppingList.shoppingItems.filter { !$0.isChecked }
+                let checkedItems = shoppingList.shoppingItems.filter { $0.isChecked }
                 
                 Section(header: Text("Unchecked Items")) {
                     ForEach(uncheckedItems, id: \.id) { item in
                         ShoppingItemButton(item: item)
                     }
+                    TextField("Neu", text: $newItem)
+                        .onSubmit {
+                            let newShoppingItem = ShoppingItem(name: newItem)
+                            shoppingList.shoppingItems.append(newShoppingItem)
+                            newItem = ""
+                        }
+                        .submitLabel(.done)
                 }
-                /*
-                TextField("Neu", text: $newItem)
-                    .onSubmit {
-                        let newShoppingItem = ShoppingItem(name: newItem)
-                        shoppingList.shoppingItems.append(newShoppingItem)
-                        newItem = ""
-                    }
-                    .submitLabel(.done)
-                   */
+                
                 Section(header: Text("Checked Items")) {
                     ForEach(checkedItems, id: \.id) { item in
                         ShoppingItemButton(item: item)
@@ -63,7 +59,6 @@ struct ShoppingListDetailView: View {
                 }
             }
         }
-        
     }
 }
 
