@@ -18,6 +18,7 @@ struct ShoppingListDetailView: View {
     @State private var newItem: String = ""
     
     @Environment(\.modelContext) var modelContext
+    @FocusState private var isTextFieldFocused: Bool
     
     var body: some View {
         NavigationView {
@@ -25,27 +26,34 @@ struct ShoppingListDetailView: View {
                 let uncheckedItems = shoppingList.shoppingItems.filter { !$0.isChecked }
                 let checkedItems = shoppingList.shoppingItems.filter { $0.isChecked }
                 
-                Section(header: Text("Unchecked Items")) {
+                Section(header: Text("Meine Produkte")) {
                     ForEach(uncheckedItems, id: \.id) { item in
                         ShoppingItemButton(item: item)
                     }
                     TextField("Neu", text: $newItem)
+                        .focused($isTextFieldFocused)
                         .onSubmit {
-                            let newShoppingItem = ShoppingItem(name: newItem)
-                            shoppingList.shoppingItems.append(newShoppingItem)
-                            newItem = ""
+                            let newItemTrimmed = newItem.trimmingCharacters(in: .whitespacesAndNewlines)
+                            if (!newItemTrimmed.isEmpty) {
+                                let newShoppingItem = ShoppingItem(name: newItemTrimmed)
+                                shoppingList.shoppingItems.append(newShoppingItem)
+                                newItem = ""
+                                isTextFieldFocused = true
+                            }
+                           
                         }
                         .submitLabel(.done)
                 }
                 
-                Section(header: Text("Checked Items")) {
+                Section(header: Text("Gekaufte Produkte")) {
                     ForEach(checkedItems, id: \.id) { item in
                         ShoppingItemButton(item: item)
                     }
                 }
             }
             .environment(shoppingList)
-            .navigationTitle(shoppingList.name)
+            .navigationTitle($shoppingList.name)
+            .navigationBarTitleDisplayMode(.inline) //TODO: Wieso geht das nicht mit .large ?
             .toolbar {
                 ToolbarItemGroup {
                     EditButton()
