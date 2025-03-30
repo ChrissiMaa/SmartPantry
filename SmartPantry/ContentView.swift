@@ -15,6 +15,10 @@ struct ContentView: View {
                 ShoppingListView()
             }
             
+            Tab("Vorratslisten", systemImage: "carrot") {
+                PantryListView()
+            }
+            
         }
     }
 }
@@ -22,6 +26,6 @@ struct ContentView: View {
 #Preview {
     ContentView()
         .modelContainer(for: [
-            ShoppingList.self
+            ShoppingList.self, PantryList.self
         ], inMemory: true)
 }

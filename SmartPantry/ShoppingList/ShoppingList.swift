@@ -18,7 +18,7 @@ class ShoppingList: Identifiable {
     init(name: String) {
         self.id = UUID()
         self.name = name
-        shoppingItems = []
+        self.shoppingItems = []
     }
 }
 
