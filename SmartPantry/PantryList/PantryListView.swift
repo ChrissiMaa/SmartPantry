@@ -29,13 +29,13 @@ struct PantryListView: View {
             }
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    AddShoppingListButton()
+                    AddPantryListButton()
                 }
             }
             .navigationTitle("Vorratslisten")
-            .navigationDestination(for: ShoppingList.self) {
-                shoppingList in
-                ShoppingListDetailView(shoppingList: shoppingList)
+            .navigationDestination(for: PantryList.self) {
+                pantryList in
+                PantryListDetailView(pantryList: pantryList)
             }
         }
     }

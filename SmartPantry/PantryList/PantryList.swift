@@ -9,7 +9,7 @@ import Foundation
 import SwiftData
 
 @Model
-class PantryList {
+class PantryList: Identifiable {
     private(set) var id: UUID //privater Setter, kann nur innerhalb der Klasse gesetzt werden (nicht von aussen)
     var name: String
     @Relationship(deleteRule: .cascade) var pantryItems: [PantryItem] //Relationship zu anderem Model für Swift-Data deklarieren. deleteRule löscht alle Items, wenn Liste gelöscht wird
@@ -25,17 +25,17 @@ class PantryList {
 class PantryItem {
     private(set) var id: UUID
     var name: String
-    var quantity: Int
-    var barcode: Int
-    var expiryDate: Date
-    var dateOfPurchase: Date
+    //var quantity: Int
+    //var barcode: Int
+    //var expiryDate: Date
+    //var dateOfPurchase: Date
     
-    init(name: String, barcode: Int, expiryDate: Date, dateOfPurchase: Date) {
+    init(name: String) {
         self.id = UUID()
         self.name = name
-        self.quantity = 1
-        self.barcode = barcode
-        self.expiryDate = expiryDate
-        self.dateOfPurchase = dateOfPurchase
+        //self.quantity = 1
+        //self.barcode = barcode
+        //self.expiryDate = expiryDate
+        //self.dateOfPurchase = dateOfPurchase
     }
 }
