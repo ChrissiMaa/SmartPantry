@@ -5,6 +5,7 @@
 //  Created by Christelle Maaß on 31.03.25.
 //
 
+import Foundation
 import SwiftUI
 
 struct PantryItemButton: View {
@@ -14,10 +15,27 @@ struct PantryItemButton: View {
     @Environment(\.modelContext) var modelContext
     
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        Button(action: {
+           
+        }, label: {
+            Text(item.name)
+        })
+        .swipeActions {
+            Button("Löschen", role: .destructive) {
+                let index = pantryList.pantryItems.firstIndex(where: { shoppingItem in
+                    shoppingItem.id == item.id
+                })
+                if let index = index {
+                    let deletedShoppingItem = pantryList.pantryItems.remove(at: index)
+                    modelContext.delete(deletedShoppingItem)
+                }
+            }
+        }
+        
     }
 }
 
-//#Preview {
-//    PantryItemButton()
-//}
+#Preview {
+    PantryItemButton(item: PantryItem(name: "Salat"))
+        .environment(PantryList(name: "Vorratsliste"))
+}
