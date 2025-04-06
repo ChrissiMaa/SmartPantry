@@ -11,15 +11,13 @@ import SwiftUI
 struct PantryItemButton: View {
     
     @Environment(PantryList.self) var pantryList: PantryList
-    var item: PantryItem
+    @Bindable var item: PantryItem
     @Environment(\.modelContext) var modelContext
     
     var body: some View {
-        Button(action: {
-           
-        }, label: {
+        NavigationLink(destination: PantryItemView(item: item)) {
             Text(item.name)
-        })
+        }
         .swipeActions {
             Button("Löschen", role: .destructive) {
                 let index = pantryList.pantryItems.firstIndex(where: { shoppingItem in

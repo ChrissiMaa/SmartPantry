@@ -25,17 +25,17 @@ class PantryList: Identifiable {
 class PantryItem {
     private(set) var id: UUID
     var name: String
-    //var quantity: Int
-    //var barcode: Int
-    //var expiryDate: Date
-    //var dateOfPurchase: Date
+    var quantity: Int
+    var barcode: Int?
+    var expiryDate: Date?
+    var dateOfPurchase: Date?
     
-    init(name: String) {
+    init(name: String, barcode: Int? = nil, expiryDate: Date? = nil, dateOfPurchase: Date? = nil) {
         self.id = UUID()
         self.name = name
-        //self.quantity = 1
-        //self.barcode = barcode
-        //self.expiryDate = expiryDate
-        //self.dateOfPurchase = dateOfPurchase
+        self.quantity = 1
+        self.barcode = barcode
+        self.expiryDate = expiryDate
+        self.dateOfPurchase = dateOfPurchase
     }
 }
