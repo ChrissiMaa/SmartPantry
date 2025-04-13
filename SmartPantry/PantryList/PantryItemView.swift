@@ -12,8 +12,10 @@ struct PantryItemView: View {
     @Bindable var item: PantryItem
     
     @State var isEditingName: Bool = false
+    
     @State var isEditingExpiryDate: Bool = false
-    @State private var selectedDate: Date = Date()
+    @State private var selectedDate: Date? = nil
+    
     
     
     var body: some View {
@@ -51,28 +53,30 @@ struct PantryItemView: View {
                 
                 Divider()
                 
-                Text("Haltbarkeitsdatum")
-                    .font(.headline)
-                if isEditingExpiryDate {
-                    DatePicker("Wähle ein Datum", selection: $selectedDate, displayedComponents: .date)
-                        .onChange(of: selectedDate) { oldDate, newDate in
-                            item.expiryDate = newDate
+                HStack {
+                    Text("Haltbarkeitsdatum")
+                        .font(.headline)
+                    Spacer()
+                    if item.expiryDate == nil {
+                        Button("Hinzufügen") {
+                            item.expiryDate = Date()
+                            isEditingExpiryDate = true
                         }
-                            
-                } else {
-                    if let expiryDate = item.expiryDate {
-                        Text("\(expiryDate, formatter: DateFormatter.dateStyle(.medium))")
-                            .onTapGesture {
-                                isEditingExpiryDate = true
-                            }
+                        .buttonStyle(.bordered)
                     } else {
-                        // Falls kein Ablaufdatum gesetzt ist, zeige das heutige Datum an
-                        Text("\(selectedDate, formatter: DateFormatter.dateStyle(.medium))")
-                            .foregroundColor(.gray)
-                            .onTapGesture {
-                                isEditingExpiryDate = true
-                            }
+                        DatePicker(
+                            "",
+                            selection: Binding(
+                                get: { item.expiryDate ?? Date() },
+                                set: { item.expiryDate = $0 }
+                            ),
+                            displayedComponents: .date
+                        )
+                        .datePickerStyle(.compact)
+                        .labelsHidden()
+                        
                     }
+                    
                 }
                 
                 Divider()
@@ -84,19 +88,14 @@ struct PantryItemView: View {
                 }
                 
                 Spacer()
+                
             }
-            .onAppear()
-            {
-                selectedDate = item.expiryDate ?? Date() //Falls kein MHD vorhanden, heutiges Datum
-            }
-        }
-        .toolbar {
-            EditButton()
+            
         }
         
     }
+    
 }
-
 extension DateFormatter {
     static func dateStyle(_ style: DateFormatter.Style) -> DateFormatter {
             let formatter = DateFormatter()

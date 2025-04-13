@@ -15,6 +15,7 @@ struct PantryListDetailView: View {
     
     @Environment(\.editMode) private var editMode
     @State private var newItem: String = ""
+    @State private var searchText: String = ""
     
     @Environment(\.modelContext) var modelContext
     @FocusState private var isTextFieldFocused: Bool
@@ -57,9 +58,11 @@ struct PantryListDetailView: View {
                 }
             }
         }
+        .searchable(text: $searchText)
     }
 }
 
-//#Preview {
-//    PantryListDetailView(pantryList: <#T##PantryList#>)
-//}
+#Preview {
+    @Previewable @State var pantryList = PantryList(name: "Kühlschrank")
+    PantryListDetailView(pantryList: pantryList)
+}
