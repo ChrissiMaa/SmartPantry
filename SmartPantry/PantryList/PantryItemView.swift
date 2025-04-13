@@ -6,17 +6,16 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct PantryItemView: View {
     
     @Bindable var item: PantryItem
     
-    @State var isEditingName: Bool = false
-    
     @State var isEditingExpiryDate: Bool = false
     @State private var selectedDate: Date? = nil
     
-    
+    @State private var showNutrients = false
     
     var body: some View {
         NavigationView {
@@ -24,32 +23,33 @@ struct PantryItemView: View {
                 
                 Text("Name")
                     .font(.headline)
-                
-                if isEditingName {
-                    TextField("Name", text: $item.name)
-                        .onSubmit {
-                            isEditingName = false
-                        }
-                } else {
-                    Text(item.name)
-                        .onTapGesture {
-                            isEditingName = true
-                        }
-                }
+                TextField("Name", text: $item.name)
                 
                 Divider()
                 
+                // TODO: Ggf. sicherstellen, dass nur Zahlen eingegeben werden dürfen
                 Text("Barcode")
                     .font(.headline)
-                if let barcode = item.barcode {
-                    Text("\(barcode)")
-                }
+                TextField("Barcode", text: Binding(
+                    get: { item.barcode ?? "" }, //Setzt TextField
+                    set: { item.barcode = $0.isEmpty ? nil : $0 } //Setzt item.barcode
+                ))
                 
                 Divider()
                 
                 Text("Anzahl")
                     .font(.headline)
-                Text("\(item.quantity)")
+                TextField("Anzahl", text: Binding(
+                    get : { String(item.quantity) },
+                    set : {
+                        if let value = Int($0), value > 0 {
+                            item.quantity = value
+                        } else {
+                            item.quantity = 1
+                        }
+                    }
+                ))
+                    .keyboardType(.numberPad)
                 
                 Divider()
                 
@@ -65,7 +65,7 @@ struct PantryItemView: View {
                         .buttonStyle(.bordered)
                     } else {
                         DatePicker(
-                            "",
+                            "Haltbarkeitsdatum",
                             selection: Binding(
                                 get: { item.expiryDate ?? Date() },
                                 set: { item.expiryDate = $0 }
@@ -80,16 +80,27 @@ struct PantryItemView: View {
                 }
                 
                 Divider()
-                
-                Text("Kaufdatum")
-                    .font(.headline)
-                if let dateOfPurchase = item.dateOfPurchase {
-                    Text("\(dateOfPurchase)")
+                HStack {
+                    Text("Kaufdatum")
+                        .font(.headline)
+                    Spacer()
+                    DatePicker(
+                        "Kaufdatum",
+                        selection: Binding(
+                            get : { item.dateOfPurchase ?? Date() }, //Setzt das Datum im DatePicker
+                            set : { item.dateOfPurchase = $0 } //Setzt item.dateOfPurchase
+                        ),
+                        displayedComponents: .date
+                    )
+                    .datePickerStyle(.compact)
+                    .labelsHidden()
+                    
                 }
                 
                 Spacer()
                 
             }
+            .padding(.all)
             
         }
         
@@ -108,4 +119,6 @@ extension DateFormatter {
 #Preview {
     PantryItemView(item: PantryItem(name: "Salat"))
         .environment(PantryList(name: "Vorrat"))
+        .modelContainer( for: [PantryItem.self], inMemory: true)
+        
 }

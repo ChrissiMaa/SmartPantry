@@ -26,16 +26,47 @@ class PantryItem {
     private(set) var id: UUID
     var name: String
     var quantity: Int
-    var barcode: Int?
+    var barcode: String?
     var expiryDate: Date?
     var dateOfPurchase: Date?
+    var nutrients: Nutrients?
+    var ingredients: [String]?
+    var plantbasedOption: DietType?
+    var note: String?
     
-    init(name: String, barcode: Int? = nil, expiryDate: Date? = nil, dateOfPurchase: Date? = nil) {
+    
+    init(name: String, barcode: String? = nil, expiryDate: Date? = nil, dateOfPurchase: Date? = nil, nutrients: Nutrients? = nil, ingredients: [String]? = nil, plantbasedOption: DietType? = nil, note: String? = nil) {
         self.id = UUID()
         self.name = name
         self.quantity = 1
         self.barcode = barcode
         self.expiryDate = expiryDate
         self.dateOfPurchase = dateOfPurchase
+        self.nutrients = nutrients
+        self.ingredients = ingredients
+        self.plantbasedOption = plantbasedOption
+        self.note = note
     }
+    
+    struct Nutrients: Codable {
+        var calories: Int
+        var carbohydrates: Int
+        var protein: Int
+        var fat: Int
+        
+        init (calories: Int, carbohydrates: Int, protein: Int, fat: Int) {
+            self.calories = calories
+            self.carbohydrates = carbohydrates
+            self.protein = protein
+            self.fat = fat
+        }
+    }
+    
+    enum DietType: String, Codable {
+        case none
+        case vegetarian
+        case vegan
+    }
+    
+    
 }
