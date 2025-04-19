@@ -21,88 +21,98 @@ struct PantryItemView: View {
     
     var body: some View {
         NavigationView {
-            VStack(alignment: .leading) {
-                
-                Text("Name")
-                    .font(.headline)
-                TextField("Name", text: $item.name)
-                
-                Divider()
-                
-                // TODO: Ggf. sicherstellen, dass nur Zahlen eingegeben werden dürfen
-                Text("Barcode")
-                    .font(.headline)
-                TextField("Barcode", text: Binding(
-                    get: { item.barcode ?? "" }, //Setzt TextField
-                    set: { item.barcode = $0.isEmpty ? nil : $0 } //Setzt item.barcode
-                ))
-                
-                Divider()
-                
-                Text("Anzahl")
-                    .font(.headline)
-                TextField("Anzahl", text: Binding(
-                    get : { String(item.quantity) },
-                    set : {
-                        if let value = Int($0), value > 0 {
-                            item.quantity = value
-                        } else {
-                            item.quantity = 1
+            Form {
+                Section {
+                    ZStack(alignment: .bottomLeading) {
+                        Image("Salat")
+                            .resizable()
+                            .aspectRatio(contentMode: .fill)
+                            .frame(height: 220) // ← hier die Höhe der Section beeinflussen
+                            .clipped()
+                        TextField("Name", text: $item.name)
+                            .font(.largeTitle)
+                            .bold()
+                            .foregroundColor(.gray)
+                    }
+                }
+                Section {
+                    HStack {
+                        VStack (alignment: .leading){
+                            Text("Menge").font(.caption)
+                            TextField("Menge", text: Binding(
+                                get : { String(item.quantity) },
+                                set : {
+                                    if let value = Int($0), value > 0 {
+                                        item.quantity = value
+                                    } else {
+                                        item.quantity = 1
+                                    }
+                                }
+                            ))
+                            .keyboardType(.numberPad)
+                        }
+                        Spacer()
+                        VStack (alignment: .leading){
+                            Text("Einheit").font(.caption)
+                            
                         }
                     }
-                ))
-                    .keyboardType(.numberPad)
-                
-                Divider()
-                
-                HStack {
-                    Text("Haltbarkeitsdatum")
-                        .font(.headline)
-                    Spacer()
-                    if item.expiryDate == nil {
-                        Button("Hinzufügen") {
-                            item.expiryDate = Date()
-                            isEditingExpiryDate = true
-                        }
-                        .buttonStyle(.bordered)
-                    } else {
+                }
+                Section {
+                    VStack (alignment: .leading){
+                        Text("Haltbarkeitsdatum").font(.caption)
+                            if item.expiryDate == nil {
+                                Button("Hinzufügen") {
+                                    item.expiryDate = Date()
+                                    isEditingExpiryDate = true
+                                }
+                                .buttonStyle(.bordered)
+                            } else {
+                                DatePicker(
+                                    "Haltbarkeitsdatum",
+                                    selection: Binding(
+                                        get: { item.expiryDate ?? Date() },
+                                        set: { item.expiryDate = $0 }
+                                    ),
+                                    displayedComponents: .date
+                                )
+                                .datePickerStyle(.compact)
+                                .labelsHidden()
+                                
+                            }
+                    }
+                    VStack (alignment: .leading) {
+                        Text("Kaufdatum")
+                            .font(.caption)
                         DatePicker(
-                            "Haltbarkeitsdatum",
+                            "Kaufdatum",
                             selection: Binding(
-                                get: { item.expiryDate ?? Date() },
-                                set: { item.expiryDate = $0 }
+                                get : { item.dateOfPurchase ?? Date() }, //Setzt das Datum im DatePicker
+                                set : { item.dateOfPurchase = $0 } //Setzt item.dateOfPurchase
                             ),
                             displayedComponents: .date
                         )
                         .datePickerStyle(.compact)
                         .labelsHidden()
-                        
                     }
+                }
+                // TODO: Ggf. sicherstellen, dass nur Zahlen eingegeben werden dürfen
+                Section {
+                    VStack(alignment: .leading) {
+                        Text("Barcode").font(.caption)
+                        TextField("Barcode", text: Binding(
+                            get: { item.barcode ?? "" },
+                            set: { item.barcode = $0.isEmpty ? nil : $0 }
+                        ))
+                    }
+                }
+                Section {
+                    Text("Vegetarisch, Vegan")
                     
                 }
-                
-                Divider()
-                HStack {
-                    Text("Kaufdatum")
-                        .font(.headline)
-                    Spacer()
-                    DatePicker(
-                        "Kaufdatum",
-                        selection: Binding(
-                            get : { item.dateOfPurchase ?? Date() }, //Setzt das Datum im DatePicker
-                            set : { item.dateOfPurchase = $0 } //Setzt item.dateOfPurchase
-                        ),
-                        displayedComponents: .date
-                    )
-                    .datePickerStyle(.compact)
-                    .labelsHidden()
-                    
-                }
-                
                 
                 if item.nutrients != nil {
-                    Form {
-                        Section(header: Text("Nährwerte")) {
+                        Section() {
                             DisclosureGroup("Nährwerte", isExpanded: $showNutrients) {
                                 VStack {
                                     HStack {
@@ -151,7 +161,6 @@ struct PantryItemView: View {
                                 }
                             }
                         }
-                    }
                 } else {
                     Button(action: {
                         showSheet = true
@@ -166,18 +175,15 @@ struct PantryItemView: View {
                             .presentationDetents([.height(650)])
                     }
                 }
-                
-
-                
-                Spacer()
-                
+                Section {
+                    DisclosureGroup("Inhaltsstoffe") {
+                       
+                    }
+                }
             }
-            .padding(.all)
-            
+            .listSectionSpacing(15)
         }
-        
     }
-    
 }
 
 extension DateFormatter {
@@ -188,10 +194,8 @@ extension DateFormatter {
         }
 }
 
-
 #Preview {
-    PantryItemView(item: PantryItem(name: "Salat"))
+    PantryItemView(item: PantryItem(name: "Salat", nutrients: PantryItem.Nutrients(calories: 30, carbohydrates: 5, protein: 2, fat: 1)))
         .environment(PantryList(name: "Vorrat"))
         .modelContainer( for: [PantryItem.self], inMemory: true)
-        
 }
