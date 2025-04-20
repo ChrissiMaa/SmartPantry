@@ -39,17 +39,23 @@ struct PantryItemView: View {
                     HStack {
                         VStack (alignment: .leading){
                             Text("Menge").font(.caption)
-                            TextField("Menge", text: Binding(
-                                get : { String(item.quantity) },
-                                set : {
-                                    if let value = Int($0), value > 0 {
-                                        item.quantity = value
-                                    } else {
-                                        item.quantity = 1
+                            HStack {
+                                TextField("Menge", text: Binding(
+                                    get : { String(item.quantity) },
+                                    set : {
+                                        if let value = Int($0), value > 0 {
+                                            item.quantity = value
+                                        } else {
+                                            item.quantity = 1
+                                        }
                                     }
-                                }
-                            ))
-                            .keyboardType(.numberPad)
+                                ))
+                                .keyboardType(.numberPad)
+                                
+                                Stepper("", value: $item.quantity, in: 1...100)
+                                    .labelsHidden()
+                            }
+                           
                         }
                         Spacer()
                         VStack (alignment: .leading){
@@ -61,6 +67,7 @@ struct PantryItemView: View {
                 Section {
                     VStack (alignment: .leading){
                         Text("Haltbarkeitsdatum").font(.caption)
+                        HStack {
                             if item.expiryDate == nil {
                                 Button("Hinzufügen") {
                                     item.expiryDate = Date()
@@ -74,12 +81,27 @@ struct PantryItemView: View {
                                         get: { item.expiryDate ?? Date() },
                                         set: { item.expiryDate = $0 }
                                     ),
+                                    in: Date()...,
                                     displayedComponents: .date
                                 )
                                 .datePickerStyle(.compact)
                                 .labelsHidden()
                                 
                             }
+                            Spacer()
+                            let daysUntilExpiry = calcDaysUntilExpiry(expiryDate: item.expiryDate ?? Date()) // Default Value Date() ???
+                            
+                            Text(
+                                daysUntilExpiry < 0 ?
+                                 "Abgelaufen" :
+                                daysUntilExpiry == 0 ?
+                                "Läuft heute ab" :
+                                daysUntilExpiry == 1 ?
+                                "Läuft ab in \(daysUntilExpiry) Tag" :
+                                "Läuft ab in \(daysUntilExpiry) Tagen"
+                            )
+                        }
+                            
                     }
                     VStack (alignment: .leading) {
                         Text("Kaufdatum")
@@ -180,6 +202,11 @@ struct PantryItemView: View {
                        
                     }
                 }
+                Section {
+                    DisclosureGroup("Notiz") {
+                        
+                    }
+                }
             }
             .listSectionSpacing(15)
         }
@@ -192,6 +219,13 @@ extension DateFormatter {
             formatter.dateStyle = style
             return formatter
         }
+}
+
+func calcDaysUntilExpiry(expiryDate: Date) -> Int {
+    let today = Calendar.current.startOfDay(for: Date())
+    let expiry = Calendar.current.startOfDay(for: expiryDate)
+    let days = Calendar.current.dateComponents([.day], from: today, to: expiry).day ?? 0
+    return days
 }
 
 #Preview {
