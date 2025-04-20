@@ -61,12 +61,28 @@ class PantryItem {
             self.fat = fat
         }
     }
+}
+
+enum Unit: String, CaseIterable, Identifiable, Codable {
+    case piece = "Stück"
+    case milliliter = "Milliliter"
+    case liter = "Liter"
+    case gram = "Gramm"
+    case kilogram = "Kilogramm"
+    case package = "Packung"
+    case bottle = "Flasche"
+    case crate = "Kasten"
+    case jar = "Glas"
+    case can = "Dose"
     
-    enum DietType: String, Codable {
-        case none
-        case vegetarian
-        case vegan
-    }
+    var id: Self { self }
+}
+
+
+enum DietType: String, CaseIterable, Identifiable, Codable {
+    case none = "Keine"
+    case vegetarian = "Vegetarisch"
+    case vegan = "Vegan"
     
-    
+    var id: Self { self }
 }

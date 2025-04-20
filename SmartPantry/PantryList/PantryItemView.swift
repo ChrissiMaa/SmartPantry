@@ -19,6 +19,9 @@ struct PantryItemView: View {
     
     @State private var showSheet = false
     
+    @State var selectedUnit: Unit = .piece
+    @State var selectedDiet: DietType = .none
+    
     var body: some View {
         NavigationView {
             Form {
@@ -27,7 +30,7 @@ struct PantryItemView: View {
                         Image("Salat")
                             .resizable()
                             .aspectRatio(contentMode: .fill)
-                            .frame(height: 220) // ← hier die Höhe der Section beeinflussen
+                            .frame(height: 220)
                             .clipped()
                         TextField("Name", text: $item.name)
                             .font(.largeTitle)
@@ -60,7 +63,13 @@ struct PantryItemView: View {
                         Spacer()
                         VStack (alignment: .leading){
                             Text("Einheit").font(.caption)
-                            
+                            Picker ("", selection: $selectedUnit) {
+                                ForEach(Unit.allCases) { unit in
+                                    Text(unit.rawValue).tag(unit)
+                                }
+                            }
+                            .pickerStyle(.navigationLink)
+                            //.labelsHidden()
                         }
                     }
                 }
@@ -128,9 +137,18 @@ struct PantryItemView: View {
                         ))
                     }
                 }
+                
                 Section {
-                    Text("Vegetarisch, Vegan")
-                    
+                    VStack(alignment: .leading) {
+                        Text("Ernährungsform").font(.caption)
+                        Picker("", selection: $selectedDiet) {
+                            ForEach(DietType.allCases) { dietType in
+                                Text(dietType.rawValue).tag(dietType)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                        //.colorMultiply(.green)
+                    }
                 }
                 
                 if item.nutrients != nil {
