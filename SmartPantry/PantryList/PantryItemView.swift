@@ -22,6 +22,9 @@ struct PantryItemView: View {
     @State var selectedUnit: Unit = .piece
     @State var selectedDiet: DietType = .none
     
+    @State private var isNoteExpanded = false
+    @State private var isIngredientsExpanded = false
+    
     var body: some View {
         NavigationView {
             Form {
@@ -151,6 +154,7 @@ struct PantryItemView: View {
                     }
                 }
                 
+                //Nutrients
                 if item.nutrients != nil {
                         Section() {
                             DisclosureGroup("Nährwerte", isExpanded: $showNutrients) {
@@ -215,16 +219,85 @@ struct PantryItemView: View {
                             .presentationDetents([.height(650)])
                     }
                 }
-                Section {
-                    DisclosureGroup("Inhaltsstoffe") {
-                       
+                
+                //Ingredients
+                if item.ingredients != nil {
+                    Section {
+                        DisclosureGroup("Inhaltsstoffe") {
+                            TextEditor(text: Binding(
+                                get: { item.ingredients?.joined(separator: ", ") ?? "" }, //Array in String umwandeln
+                                set: { newValue in
+                                    let maxCharacterCount = 350
+                                    if newValue.count <= maxCharacterCount {
+                                        item.ingredients = newValue
+                                            .split(separator: ",") //String in Array umwandeln
+                                            .map { String($0) }
+                                    } else {
+                                        let croppedText = String(newValue.prefix(maxCharacterCount))
+                                        item.ingredients = croppedText
+                                            .split(separator: ",")
+                                            .map { String($0) }
+                                    }
+                                }
+                            ))
+                            .swipeActions {
+                                Button("Löschen", role: .destructive) {
+                                    item.ingredients = nil
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    Section {
+                        Button(action: {
+                            item.ingredients = []
+                            isIngredientsExpanded = true
+                        }, label: {
+                            HStack {
+                                Image(systemName: "plus")
+                                Text("Inhaltsstoffe hinzufügen")
+                            }
+                        })
                     }
                 }
-                Section {
-                    DisclosureGroup("Notiz") {
-                        
+            
+                //Note
+                if item.note != nil {
+                    Section {
+                        DisclosureGroup("Notiz", isExpanded: $isNoteExpanded) {
+                            TextEditor(text: Binding(
+                                get: { String(item.note ?? "") },
+                                set: { newValue in
+                                    let maxCharacterCount = 350
+                                    if newValue.count <= maxCharacterCount {
+                                        item.note = newValue
+                                    } else {
+                                        item.note = String(newValue.prefix(maxCharacterCount)) //Text kürzen, wenn über 350 Zeichen lang
+                                    }
+                                }
+                            ))
+                            .swipeActions {
+                                Button("Löschen", role: .destructive) {
+                                    item.note = nil
+                                }
+                            }
+                        }
                     }
+                } else {
+                    Section {
+                        Button(action: {
+                            item.note = ""
+                            isNoteExpanded = true
+                        }, label: {
+                            HStack {
+                                Image(systemName: "plus")
+                                Text("Notiz hinzufügen")
+                            }
+                        })
+                    }
+                    
                 }
+                
             }
             .listSectionSpacing(15)
         }
