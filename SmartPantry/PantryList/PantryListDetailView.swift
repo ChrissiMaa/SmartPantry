@@ -22,41 +22,47 @@ struct PantryListDetailView: View {
     
     var body: some View {
         NavigationView {
-            List(selection: $selectedItems) {
-                Section(header: Text("Meine Produkte")) {
-                    ForEach(pantryList.pantryItems, id: \.id) { item in
-                        PantryItemButton(item: item)
-                    }
-                    TextField("Neu", text: $newItem)
-                        .focused($isTextFieldFocused)
-                        .onSubmit {
-                            let newItemTrimmed = newItem.trimmingCharacters(in: .whitespacesAndNewlines)
-                            if (!newItemTrimmed.isEmpty) {
-                                let newPantryItem = PantryItem(name: newItemTrimmed)
-                                pantryList.pantryItems.append(newPantryItem)
-                                newItem = ""
-                                isTextFieldFocused = true
+            ZStack (alignment: .bottomTrailing){
+                List(selection: $selectedItems) {
+                    Section(header: Text("Meine Produkte")) {
+                        ForEach(pantryList.pantryItems, id: \.id) { item in
+                            PantryItemButton(item: item)
+                        }
+                        
+                        TextField("Neu", text: $newItem)
+                            .focused($isTextFieldFocused)
+                            .onSubmit {
+                                let newItemTrimmed = newItem.trimmingCharacters(in: .whitespacesAndNewlines)
+                                if (!newItemTrimmed.isEmpty) {
+                                    let newPantryItem = PantryItem(name: newItemTrimmed)
+                                    pantryList.pantryItems.append(newPantryItem)
+                                    newItem = ""
+                                    isTextFieldFocused = true
+                                }
+                               
                             }
-                           
-                        }
-                        .submitLabel(.done)
+                            .submitLabel(.done)
+                    }
                 }
-            }
-            .environment(pantryList)
-            .navigationTitle($pantryList.name)
-            .navigationBarTitleDisplayMode(.inline) //TODO: Wieso geht das nicht mit .large ?
-            .toolbar {
-                ToolbarItemGroup {
-                    EditButton()
-                    Button(action: {
-                        pantryList.pantryItems.removeAll { item in
-                            selectedItems.contains(item.id)
-                        }
-                    }, label: {
-                        Image(systemName: "trash")
-                    })
+                .environment(pantryList)
+                .navigationTitle($pantryList.name)
+                .navigationBarTitleDisplayMode(.inline) //TODO: Wieso geht das nicht mit .large ?
+                .toolbar {
+                    ToolbarItemGroup {
+                        EditButton()
+                        Button(action: {
+                            pantryList.pantryItems.removeAll { item in
+                                selectedItems.contains(item.id)
+                            }
+                        }, label: {
+                            Image(systemName: "trash")
+                        })
+                    }
                 }
+                
+                FloatingAddButton()
             }
+            
         }
         .searchable(text: $searchText)
     }
