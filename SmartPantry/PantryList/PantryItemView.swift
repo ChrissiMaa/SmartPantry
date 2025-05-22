@@ -15,15 +15,10 @@ struct PantryItemView: View {
     @State var isEditingExpiryDate: Bool = false
     @State private var selectedDate: Date? = nil
     
-    @State private var showNutrients = false
     
-    @State private var showSheet = false
     
-    @State var selectedUnit: Unit = .piece
     @State var selectedDiet: DietType = .none
     
-    @State private var isNoteExpanded = false
-    @State private var isIngredientsExpanded = false
     
     var body: some View {
         NavigationView {
@@ -42,39 +37,7 @@ struct PantryItemView: View {
                     }
                 }
                 Section {
-                    HStack {
-                        VStack (alignment: .leading){
-                            Text("Menge").font(.caption)
-                            HStack {
-                                TextField("Menge", text: Binding(
-                                    get : { String(item.quantity) },
-                                    set : {
-                                        if let value = Int($0), value > 0 {
-                                            item.quantity = value
-                                        } else {
-                                            item.quantity = 1
-                                        }
-                                    }
-                                ))
-                                .keyboardType(.numberPad)
-                                
-                                Stepper("", value: $item.quantity, in: 1...100)
-                                    .labelsHidden()
-                            }
-                           
-                        }
-                        Spacer()
-                        VStack (alignment: .leading){
-                            Text("Einheit").font(.caption)
-                            Picker ("", selection: $selectedUnit) {
-                                ForEach(Unit.allCases) { unit in
-                                    Text(unit.rawValue).tag(unit)
-                                }
-                            }
-                            .pickerStyle(.navigationLink)
-                            //.labelsHidden()
-                        }
-                    }
+                    PantryItemQuantityView(item: item)
                 }
                 Section {
                     VStack (alignment: .leading){
@@ -154,149 +117,15 @@ struct PantryItemView: View {
                     }
                 }
                 
-                //Nutrients
-                if item.nutrients != nil {
-                        Section() {
-                            DisclosureGroup("Nährwerte", isExpanded: $showNutrients) {
-                                VStack {
-                                    HStack {
-                                        Text("Kalorien")
-                                        Spacer()
-                                        TextField("Kalorien", text: Binding(
-                                            get: { String(item.nutrients?.calories ?? 0) },
-                                            set: { item.nutrients?.calories = Int($0) ?? 0 }
-                                        ))
-                                            .multilineTextAlignment(.trailing)
-                                            .keyboardType(.numberPad)
-                                    }
-                                    
-                                    HStack {
-                                        Text("Kohlenhydrate")
-                                        Spacer()
-                                        TextField("Kohlenhydrate", text: Binding(
-                                            get: { String(item.nutrients?.carbohydrates ?? 0) },
-                                            set: { item.nutrients?.carbohydrates = Int($0) ?? 0 }
-                                        ))
-                                            .multilineTextAlignment(.trailing)
-                                            .keyboardType(.numberPad)
-                                    }
-                                    
-                                    HStack {
-                                        Text("Proteine")
-                                        Spacer()
-                                        TextField("Proteine", text: Binding(
-                                            get: { String(item.nutrients?.protein ?? 0) },
-                                            set: { item.nutrients?.protein = Int($0) ?? 0 }
-                                        ))
-                                            .multilineTextAlignment(.trailing)
-                                            .keyboardType(.numberPad)
-                                    }
-                                    
-                                    HStack {
-                                        Text("Fett")
-                                        Spacer()
-                                        TextField("Fett", text: Binding(
-                                            get: { String(item.nutrients?.fat ?? 0) },
-                                            set: { item.nutrients?.fat = Int($0) ?? 0 }
-                                        ))
-                                            .multilineTextAlignment(.trailing)
-                                            .keyboardType(.numberPad)
-                                    }
-                                }
-                            }
-                        }
-                } else {
-                    Button(action: {
-                        showSheet = true
-                    }, label: {
-                        HStack {
-                            Image(systemName: "plus")
-                            Text("Nährwerte hinzufügen")
-                        }
-                    })
-                    .sheet(isPresented: $showSheet) {
-                        AddNutrientsView(item: item)
-                            .presentationDetents([.height(650)])
-                    }
-                }
-                
-                //Ingredients
-                if item.ingredients != nil {
-                    Section {
-                        DisclosureGroup("Inhaltsstoffe") {
-                            TextEditor(text: Binding(
-                                get: { item.ingredients?.joined(separator: ", ") ?? "" }, //Array in String umwandeln
-                                set: { newValue in
-                                    let maxCharacterCount = 350
-                                    if newValue.count <= maxCharacterCount {
-                                        item.ingredients = newValue
-                                            .split(separator: ",") //String in Array umwandeln
-                                            .map { String($0) }
-                                    } else {
-                                        let croppedText = String(newValue.prefix(maxCharacterCount))
-                                        item.ingredients = croppedText
-                                            .split(separator: ",")
-                                            .map { String($0) }
-                                    }
-                                }
-                            ))
-                            .swipeActions {
-                                Button("Löschen", role: .destructive) {
-                                    item.ingredients = nil
-                                }
-                            }
-                        }
-                    }
-                } else {
-                    Section {
-                        Button(action: {
-                            item.ingredients = []
-                            isIngredientsExpanded = true
-                        }, label: {
-                            HStack {
-                                Image(systemName: "plus")
-                                Text("Inhaltsstoffe hinzufügen")
-                            }
-                        })
-                    }
-                }
+            //Nutrients
+            PantryItemNutrientsView(item: item)
+               
+            //Ingredients
+            PantryItemIngredientView(item: item)
             
-                //Note
-                if item.note != nil {
-                    Section {
-                        DisclosureGroup("Notiz", isExpanded: $isNoteExpanded) {
-                            TextEditor(text: Binding(
-                                get: { String(item.note ?? "") },
-                                set: { newValue in
-                                    let maxCharacterCount = 350
-                                    if newValue.count <= maxCharacterCount {
-                                        item.note = newValue
-                                    } else {
-                                        item.note = String(newValue.prefix(maxCharacterCount)) //Text kürzen, wenn über 350 Zeichen lang
-                                    }
-                                }
-                            ))
-                            .swipeActions {
-                                Button("Löschen", role: .destructive) {
-                                    item.note = nil
-                                }
-                            }
-                        }
-                    }
-                } else {
-                    Section {
-                        Button(action: {
-                            item.note = ""
-                            isNoteExpanded = true
-                        }, label: {
-                            HStack {
-                                Image(systemName: "plus")
-                                Text("Notiz hinzufügen")
-                            }
-                        })
-                    }
-                    
-                }
+            //Note
+            PantryItemNoteView(item: item)
+                
                 
             }
             .listSectionSpacing(15)

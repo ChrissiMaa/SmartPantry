@@ -55,10 +55,10 @@ struct AddNutrientsView: View {
             
             Button(action: {
                 let nutrients = PantryItem.Nutrients(
-                    calories: Int(calories) ?? 0,
-                    carbohydrates: Int(carbohydrates) ?? 0,
-                    protein: Int(protein) ?? 0,
-                    fat: Int(fat) ?? 0)
+                    calories: Double(calories) ?? 0,
+                    carbohydrates: Double(carbohydrates) ?? 0,
+                    protein: Double(protein) ?? 0,
+                    fat: Double(fat) ?? 0)
                 item.nutrients = nutrients
                 
             }) {

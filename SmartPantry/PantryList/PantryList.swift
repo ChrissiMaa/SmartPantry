@@ -49,12 +49,12 @@ class PantryItem {
     }
     
     struct Nutrients: Codable {
-        var calories: Int
-        var carbohydrates: Int
-        var protein: Int
-        var fat: Int
+        var calories: Double
+        var carbohydrates: Double
+        var protein: Double
+        var fat: Double
         
-        init (calories: Int, carbohydrates: Int, protein: Int, fat: Int) {
+        init (calories: Double, carbohydrates: Double, protein: Double, fat: Double) {
             self.calories = calories
             self.carbohydrates = carbohydrates
             self.protein = protein

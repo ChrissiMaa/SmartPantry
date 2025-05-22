@@ -18,7 +18,7 @@ struct FloatingAddButton: View {
             Image(systemName: "plus")
                 .font(.title.weight(.semibold))
                 .padding()
-                .background(.green)
+                .background(.blue)
                 .foregroundColor(.white)
                 .clipShape(Circle())
                 .shadow(radius: 4, x: 0, y: 4)
