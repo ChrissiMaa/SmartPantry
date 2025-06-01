@@ -13,6 +13,13 @@ struct PantryItemNutrientsView: View {
     @State private var showNutrients = false
     @State private var showSheet = false
     
+    @FocusState private var isCaloriesFocused: Bool
+    @State private var caloriesInput: String = ""
+    
+    @FocusState private var isCarbsFocused: Bool
+    @FocusState private var isProteinFocused: Bool
+    @FocusState private var isFatFocused: Bool
+    
     var body: some View {
         if item.nutrients != nil {
             Section() {
@@ -21,12 +28,33 @@ struct PantryItemNutrientsView: View {
                         HStack {
                             Text("Kalorien")
                             Spacer()
-                            TextField("Kalorien", text: Binding(
-                                get: { String(item.nutrients?.calories ?? 0) },
-                                set: { item.nutrients?.calories = Double($0) ?? 0 }
-                            ))
-                                .multilineTextAlignment(.trailing)
-                                .keyboardType(.numberPad)
+                            HStack {
+                                TextField("Kalorien", text: $caloriesInput)
+                                    .multilineTextAlignment(.trailing)
+                                    .keyboardType(.decimalPad)
+                                    .focused($isCaloriesFocused)
+                                    .onChange(of: isCaloriesFocused) { _, focused in
+                                        if !focused {
+                                            let sanitized = caloriesInput.replacingOccurrences(of: ",", with: ".")
+                                            if let value = Double(sanitized) {
+                                                item.nutrients?.calories = value
+                                                caloriesInput = formatDouble(value)
+                                            }
+                                        }
+                                    }
+
+                                if !isCaloriesFocused {
+                                    Text("kcal")
+                                }
+                            }
+                            .contentShape(Rectangle())
+                            .onTapGesture {
+                                isCaloriesFocused = true
+                            }
+                        }
+                        .onAppear {
+                            // Beim Start initial befüllen
+                            caloriesInput = formatDouble(item.nutrients?.calories ?? 0)
                         }
                         
                         HStack {
@@ -79,6 +107,15 @@ struct PantryItemNutrientsView: View {
         }
     }
     }
+    
+    func formatDouble(_ number: Double) -> String {
+            let formatter = NumberFormatter()
+            formatter.numberStyle = .decimal
+            formatter.minimumFractionDigits = 1
+            formatter.maximumFractionDigits = 2
+            formatter.decimalSeparator = ","
+            return formatter.string(from: NSNumber(value: number)) ?? "0,0"
+        }
 }
 
 #Preview {
