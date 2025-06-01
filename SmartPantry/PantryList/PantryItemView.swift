@@ -107,7 +107,10 @@ struct PantryItemView: View {
                 Section {
                     VStack(alignment: .leading) {
                         Text("Ernährungsform").font(.caption)
-                        Picker("", selection: $selectedDiet) {
+                        Picker("", selection: Binding(
+                            get: { item.plantbasedOption ?? DietType.none },
+                            set: { item.plantbasedOption = $0 }
+                        )) {
                             ForEach(DietType.allCases) { dietType in
                                 Text(dietType.rawValue).tag(dietType)
                             }

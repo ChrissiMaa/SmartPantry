@@ -18,7 +18,7 @@ struct AddPantryListView: View {
     var body: some View {
         Form {
             Section {
-                TextField("Bezeichnung", text: $caption)
+                TextField("Name", text: $caption)
             }
             
             Section {

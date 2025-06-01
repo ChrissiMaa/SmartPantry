@@ -10,6 +10,7 @@ import SwiftUI
 struct AddNutrientsView: View {
     
     @Bindable var item: PantryItem
+    @Environment(\.dismiss) var dismiss
     
     @State private var calories: String = ""
     @State private var carbohydrates: String = ""
@@ -60,7 +61,7 @@ struct AddNutrientsView: View {
                     protein: Double(protein) ?? 0,
                     fat: Double(fat) ?? 0)
                 item.nutrients = nutrients
-                
+                    dismiss()
             }) {
                 Text("Speichern")
                     .frame(maxWidth: .infinity, alignment: .center)
