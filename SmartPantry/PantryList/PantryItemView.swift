@@ -64,7 +64,7 @@ struct PantryItemView: View {
                                 
                             }
                             Spacer()
-                            let daysUntilExpiry = calcDaysUntilExpiry(expiryDate: item.expiryDate ?? Date()) // Default Value Date() ???
+                            let daysUntilExpiry = (item.expiryDate ?? Date()).daysUntilExpiry()
                             
                             Text(
                                 daysUntilExpiry < 0 ?
@@ -144,11 +144,21 @@ extension DateFormatter {
         }
 }
 
+/*
 func calcDaysUntilExpiry(expiryDate: Date) -> Int {
     let today = Calendar.current.startOfDay(for: Date())
     let expiry = Calendar.current.startOfDay(for: expiryDate)
     let days = Calendar.current.dateComponents([.day], from: today, to: expiry).day ?? 0
     return days
+}
+ */
+
+extension Date {
+    func daysUntilExpiry() -> Int {
+        let today = Calendar.current.startOfDay(for: Date())
+        let target = Calendar.current.startOfDay(for: self)
+        return Calendar.current.dateComponents([.day], from: today, to: target).day ?? 0
+    }
 }
 
 #Preview {
