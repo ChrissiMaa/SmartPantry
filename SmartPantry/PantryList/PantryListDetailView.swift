@@ -60,7 +60,7 @@ struct PantryListDetailView: View {
                     }
                 }
                 
-                FloatingAddButton()
+                FloatingAddButton(pantryList: pantryList)
             }
             
         }

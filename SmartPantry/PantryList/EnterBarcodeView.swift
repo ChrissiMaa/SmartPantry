@@ -10,7 +10,7 @@ import SwiftUI
 struct EnterBarcodeView: View {
     
     @Environment(\.dismiss) var dismiss
-    
+    @Bindable var pantryList: PantryList
     var apiService: OpenFoodFactsAPIService = OpenFoodFactsAPIService()
     
     @State private var barcode: String = ""
@@ -28,6 +28,8 @@ struct EnterBarcodeView: View {
                         do {
                             let response = try await apiService.fetchProduct(by: barcode)
                             print(response)
+                            let newPantryItem = toViewModel(response: response)
+                            pantryList.pantryItems.append(newPantryItem)
                         } catch {
                             errorMessage = error.localizedDescription
                         }
@@ -40,5 +42,5 @@ struct EnterBarcodeView: View {
 }
 
 #Preview {
-    EnterBarcodeView()
+    EnterBarcodeView(pantryList: PantryList(name: "Vorrat"))
 }

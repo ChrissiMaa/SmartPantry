@@ -9,6 +9,7 @@ import SwiftUI
 
 struct FloatingAddButton: View {
     
+    @Bindable var pantryList: PantryList
     @State private var showSheet: Bool = false
     
     var body: some View {
@@ -25,7 +26,7 @@ struct FloatingAddButton: View {
         }
         .padding()
         .sheet(isPresented: $showSheet) {
-            EnterBarcodeView( )
+            EnterBarcodeView(pantryList: pantryList)
                 .presentationDetents([.height(450)])
             
         }
@@ -33,5 +34,5 @@ struct FloatingAddButton: View {
 }
 
 #Preview {
-    FloatingAddButton()
+    FloatingAddButton(pantryList: PantryList(name: "Vorrat"))
 }

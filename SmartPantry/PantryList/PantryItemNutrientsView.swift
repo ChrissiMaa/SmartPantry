@@ -7,6 +7,8 @@
 
 import SwiftUI
 
+/// A reusable input row for editing a single nutrient value (e.g. calories, fat).
+/// Handles user input, number formatting, decimal sanitization, and  unit display.
 struct NutrientInputRow: View {
     let title: String
     let unit: String?
@@ -57,6 +59,9 @@ struct NutrientInputRow: View {
     }
 }
 
+/// Displays the nutrient information (calories, carbohydrates, protein, fat)
+/// for a given `PantryItem`. If no nutrients exist, it offers a button to add them.
+/// Each nutrient is shown using a reusable `NutrientInputRow` with formatting and validation.
 struct PantryItemNutrientsView: View {
     
     @Bindable var item: PantryItem

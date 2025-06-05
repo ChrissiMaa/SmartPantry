@@ -10,7 +10,7 @@ import Foundation
 class OpenFoodFactsAPIService {
     
     func fetchProduct(by barcode: String) async throws -> OpenFoodFactsResponse {
-       let urlString = "https://world.openfoodfacts.org/api/v2/product/\(barcode)?fields=product_name,brands,nutriments,image_url,ingredients_text"
+       let urlString = "https://world.openfoodfacts.org/api/v2/product/\(barcode)?fields=product_name,brands,nutriments,image_url,ingredients_text,ingredients_analysis_tags"
        
        guard let url = URL(string: urlString) else {
            throw URLError(.badURL)
