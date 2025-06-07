@@ -16,6 +16,7 @@ struct PantryListDetailView: View {
     @Environment(\.editMode) private var editMode
     @State private var newItem: String = ""
     @State private var searchText: String = ""
+    @State private var sortByExpiryDate: Bool = false
     
     @Environment(\.modelContext) var modelContext
     @FocusState private var isTextFieldFocused: Bool
@@ -25,7 +26,7 @@ struct PantryListDetailView: View {
             ZStack (alignment: .bottomTrailing){
                 List(selection: $selectedItems) {
                     Section(header: Text("Meine Produkte")) {
-                        ForEach(pantryList.pantryItems, id: \.id) { item in
+                        ForEach(sortedItems, id: \.id) { item in
                             PantryItemButton(item: item)
                         }
                         
@@ -57,6 +58,13 @@ struct PantryListDetailView: View {
                         }, label: {
                             Image(systemName: "trash")
                         })
+                        Menu {
+                            Toggle(isOn: $sortByExpiryDate) {
+                                Label("Sort by expiry date", systemImage: "calendar")
+                            }
+                        } label: {
+                            Label("Sort", systemImage: "arrow.up.arrow.down")
+                        }
                     }
                 }
                 
@@ -65,6 +73,29 @@ struct PantryListDetailView: View {
             
         }
         .searchable(text: $searchText)
+    }
+    
+    /// A computed property that returns the list of pantry items filtered by the current search text.
+    /// If the search text is empty, all items are returned.
+    var filteredItems: [PantryItem] {
+        if searchText.isEmpty {
+            return pantryList.pantryItems
+        } else {
+            return pantryList.pantryItems.filter { item in
+                item.name.localizedCaseInsensitiveContains(searchText)
+            }
+        }
+    }
+    
+    /// A computed property that sorts the given items by expiry date if sorting by expiry date is enabled.
+    var sortedItems: [PantryItem] {
+        if sortByExpiryDate {
+            return filteredItems.sorted {
+                ($0.expiryDate ?? Date.distantFuture) < ($1.expiryDate ?? Date.distantFuture)
+            }
+        } else {
+            return filteredItems
+        }
     }
 }
 
