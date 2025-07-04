@@ -10,9 +10,13 @@ import SwiftData
 
 @main
 struct SmartPantryApp: App {
+    //Kamera-Service initialisieren
+    @StateObject var cameraService = CameraService()
+    
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environmentObject(cameraService)
                 .modelContainer(for: [
                     ShoppingList.self,
                     ShoppingItem.self,
