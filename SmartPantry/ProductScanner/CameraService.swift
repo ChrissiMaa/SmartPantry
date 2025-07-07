@@ -6,7 +6,17 @@
 //
 
 import AVFoundation
+import Vision
 
+/// Kamera-Service, der eine Kamera-Session aufbaut und für die Bildverarbeitung zuständig ist.
+///
+/// Für die Barcodeerkennung wird `AVCaptureMetadataOutput` verwendet,
+/// Barcodes werden direkt in der Kamerapipeline erkannt ohne, dass manuelle Bildanalyse erforderlichist.
+///
+/// Für die Erkennung von Mindeshaltbarkeitsdaten wird `AVCaptureVideoDataOutput` verwendet,
+/// Haltbarkeitsdaten werden mit Vision auf den einzelnen Videoframes als BildText erkannt.
+/// Dazu werden die Pixel über `VideoDataOutput` abgegriffen und an `VNRecognizeTextRequest` übergeben.
+///
 /// ObservableObject, damit SwiftUI bei Änderungen reagieren kann.
 class CameraService: NSObject, ObservableObject {
     /// Zentrale AVCaptureSession, die Input (Kamera) und Outputs verwaltet.
@@ -15,15 +25,26 @@ class CameraService: NSObject, ObservableObject {
     /// MetadataOutput für Barcodes
     private let metadataOutput = AVCaptureMetadataOutput()
     
+    /// VideoDataOutput für Haltbarkeitsdaten
+    private let videodataOutput = AVCaptureVideoDataOutput()
+    
+    private var textRecognitionRequest = VNRecognizeTextRequest()
+
+    var isScanning = true
+    
     /// Gefundener Barcode als Published, um UI zu benachrichtigen
     @Published var scannedCode: String?
+    /// Gefundenes Mindesthaltbarkeitsdatum, um UI zu benachrichtigen
+    @Published var detectedDate: String?
     
-    var isScanning = true
     
     /// Initializer – startet die Konfiguration direkt beim Erzeugen.
     /// Ruft den Konstruktor von NSObjekt auf
     override init() {
         super.init()
+        
+        textRecognitionRequest.recognitionLevel = .accurate
+        textRecognitionRequest.recognitionLanguages = ["de-DE"]
         
         configureSession()
         // Kamera mit Hintergrund-Thread aufrufen (Verhindert UI Hänger)
@@ -48,16 +69,22 @@ class CameraService: NSObject, ObservableObject {
         //Kamera als Input hinzufügen
         session.addInput(input)
         
-        // 2. MetadataOutput für Barcode-Scan hinzufügen
+        // MetadataOutput für Barcode-Scan hinzufügen
         if session.canAddOutput(metadataOutput) {
             session.addOutput(metadataOutput)
 
             // Setzt die aktuelle CameraService-Instanz als Delegate für die Metadaten-Erkennung.
             // Dadurch wird die Methode `metadataOutput` automatisch aufgerufen, sobald die Kamera z. B. Barcodes erkennt.
-            metadataOutput.setMetadataObjectsDelegate(self, queue: DispatchQueue.main)
+            metadataOutput.setMetadataObjectsDelegate(self, queue: DispatchQueue(label: "camera.metadata.processing"))
 
             // Barcode-Typen, die erkannt werden sollen
             metadataOutput.metadataObjectTypes = [.ean8, .ean13, .upce]
+        }
+        
+        if session.canAddOutput(videodataOutput) {
+            session.addOutput(videodataOutput)
+            
+            videodataOutput.setSampleBufferDelegate(self, queue: DispatchQueue(label: "camera.frame.processing"))
         }
                     
         //Konfigurationsänderungen übernehmen
@@ -69,7 +96,7 @@ class CameraService: NSObject, ObservableObject {
 
 
 /// Delegate Methode, die automatisch von AVFoundation aufgerufen wird,
-/// sobald ein erkennbares Metadatenobjekt (z.B. ein Barcode) im Kamerabild gebunden wird.
+/// sobald ein erkennbares Metadatenobjekt (z.B. ein Barcode) im Kamerabild gefunden wird.
 ///
 /// - Parameters:
 ///     - output: Das AVCaptureMetadataOutput-Objekt, das die Erkennung ausgelöst hat.
@@ -104,3 +131,35 @@ extension CameraService: AVCaptureMetadataOutputObjectsDelegate {
     }
 }
 
+/// Delegate Methode, die automatisch von AVFoundation aufgerufen wird
+extension CameraService: AVCaptureVideoDataOutputSampleBufferDelegate {
+    func captureOutput(_ output: AVCaptureOutput,
+                       didOutput sampleBuffer: CMSampleBuffer,
+                       from connection: AVCaptureConnection) {
+        
+        guard isScanning,
+              let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
+        
+        let requestHandler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, options: [:])
+        
+        textRecognitionRequest = VNRecognizeTextRequest { [weak self] request, error in
+            guard let self,
+                  let results = request.results as? [VNRecognizedTextObservation] else { return }
+            
+            for observation in results {
+                guard let candidate = observation.topCandidates(1).first else { continue }
+                let text = candidate.string
+                
+                let pattern = #"\b\d{1,2}[./]\d{1,2}[./]\d{2,4}\b"#
+                if let match = text.range(of: pattern, options: .regularExpression) {
+                    DispatchQueue.main.async {
+                        self.detectedDate = String(text[match])
+                        self.isScanning = false
+                    }
+                    break
+                }
+            }
+        }
+        try? requestHandler.perform([textRecognitionRequest])
+    }
+}

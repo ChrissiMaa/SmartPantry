@@ -76,6 +76,12 @@ struct ProductScannerView: View {
                 showScanResult = true
             }
         }
+        .onReceive(cameraService.$detectedDate) { date in
+            if let date {
+                // Zeige Overlay, speichere MHD, etc.
+                print("Erkanntes MHD: \(date)")
+            }
+        }
         .onAppear {
             DispatchQueue.global(qos: .userInitiated).async {
                 if !cameraService.session.isRunning {
