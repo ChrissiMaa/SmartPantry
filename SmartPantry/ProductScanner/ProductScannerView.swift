@@ -14,6 +14,7 @@ struct ProductScannerView: View {
     
     @State private var scanMode: ScanMode = .barcode
     @State private var showScanResult = false
+    @State private var showDateResult = false
 
     var body: some View {
         ZStack {
@@ -46,6 +47,29 @@ struct ProductScannerView: View {
                .padding()
            }
             
+            if showDateResult, let dateString = cameraService.detectedDate {
+                VStack(spacing: 20) {
+                    Text("Datum erkannt:")
+                    Text(dateString)
+                        .foregroundColor(.green)
+                        .multilineTextAlignment(.center)
+                        .padding()
+                    Button("Fortfahren") {
+                        cameraService.isScanning = true
+                        cameraService.detectedDate = nil
+                        showScanResult = false
+                    }
+                    .padding()
+                    .background(Color.blue)
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
+                }
+                .padding()
+                .background(Color.black.opacity(0.8))
+                .cornerRadius(16)
+                .padding()
+            }
+            
             
             // Picker + Modus-Anzeige
             VStack {
@@ -77,9 +101,8 @@ struct ProductScannerView: View {
             }
         }
         .onReceive(cameraService.$detectedDate) { date in
-            if let date {
-                // Zeige Overlay, speichere MHD, etc.
-                print("Erkanntes MHD: \(date)")
+            if date != nil {
+                showDateResult = true
             }
         }
         .onAppear {

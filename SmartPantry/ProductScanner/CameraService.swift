@@ -150,7 +150,7 @@ extension CameraService: AVCaptureVideoDataOutputSampleBufferDelegate {
                 guard let candidate = observation.topCandidates(1).first else { continue }
                 let text = candidate.string
                 
-                let pattern = #"\b\d{1,2}[./]\d{1,2}[./]\d{2,4}\b"#
+                let pattern = #"\b(\d{1,2}[./]\d{1,2}([./]\d{2,4})?)\b|\b(\d{1,2}[./]\d{2,4})\b"#
                 if let match = text.range(of: pattern, options: .regularExpression) {
                     DispatchQueue.main.async {
                         self.detectedDate = String(text[match])
