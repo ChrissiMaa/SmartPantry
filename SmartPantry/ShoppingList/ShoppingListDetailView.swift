@@ -10,14 +10,14 @@ import SwiftUI
 import SwiftData
 
 struct ShoppingListDetailView: View {
+    @Environment(\.modelContext) var modelContext
     
     @Bindable var shoppingList: ShoppingList //Bindable weil wir shoppingList bearbeiten
+    @State private var editMode: EditMode = .inactive
+
     @State private var selectedItems = Set<UUID>()
-    
-    @Environment(\.editMode) private var editMode
     @State private var newItem: String = ""
     
-    @Environment(\.modelContext) var modelContext
     @FocusState private var isTextFieldFocused: Bool
     
     var body: some View {
@@ -40,32 +40,34 @@ struct ShoppingListDetailView: View {
                                 newItem = ""
                                 isTextFieldFocused = true
                             }
-                           
+                            
                         }
                         .submitLabel(.done)
                 }
-                
                 Section(header: Text("Gekaufte Produkte")) {
                     ForEach(checkedItems, id: \.id) { item in
                         ShoppingItemButton(item: item)
                     }
                 }
             }
-            .environment(shoppingList)
             .navigationTitle($shoppingList.name)
             .navigationBarTitleDisplayMode(.inline) //TODO: Wieso geht das nicht mit .large ?
             .toolbar {
-                ToolbarItemGroup {
+                ToolbarItemGroup(placement: .navigationBarTrailing) {
                     EditButton()
-                    Button(action: {
-                        shoppingList.shoppingItems.removeAll { item in
-                            selectedItems.contains(item.id)
-                        }
-                    }, label: {
-                        Image(systemName: "trash")
-                    })
+                    if editMode == .active {
+                        Button(action: {
+                            shoppingList.shoppingItems.removeAll { item in
+                                selectedItems.contains(item.id)
+                            }
+                        }, label: {
+                            Image(systemName: "trash")
+                        })
+                    }
                 }
             }
+            .environment(shoppingList)
+            .environment(\.editMode, $editMode)
         }
     }
 }

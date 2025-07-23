@@ -9,7 +9,7 @@ import Foundation
 import SwiftData
 
 @Model
-class ShoppingList: Identifiable {
+class ShoppingList: Identifiable, Hashable {
     private(set) var id: UUID // privater Setter, kann nur innerhalb der Klasse gesetzt werden (nicht von aussen)
 
     var name: String
@@ -23,7 +23,7 @@ class ShoppingList: Identifiable {
 }
 
 @Model
-class ShoppingItem: Identifiable {
+class ShoppingItem: Identifiable, Hashable {
     private(set) var id: UUID // privater Setter, kann nur innerhalb der Klasse gesetzt werden (nicht von aussen)
     
     var name: String
