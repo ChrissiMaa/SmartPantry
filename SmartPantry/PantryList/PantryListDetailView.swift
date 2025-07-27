@@ -13,7 +13,7 @@ struct PantryListDetailView: View {
     @Bindable var pantryList: PantryList //Bindable, weil wir pantryList bearbeiten
     @State private var selectedItems = Set<UUID>()
     
-    @Environment(\.editMode) private var editMode
+    @State private var editMode: EditMode = .inactive
     @State private var newItem: String = ""
     @State private var searchText: String = ""
     @State private var sortByExpiryDate: Bool = false
@@ -45,19 +45,20 @@ struct PantryListDetailView: View {
                             .submitLabel(.done)
                     }
                 }
-                .environment(pantryList)
                 .navigationTitle($pantryList.name)
                 .navigationBarTitleDisplayMode(.inline) //TODO: Wieso geht das nicht mit .large ?
                 .toolbar {
-                    ToolbarItemGroup {
+                    ToolbarItemGroup(placement: .navigationBarTrailing) {
                         EditButton()
-                        Button(action: {
-                            pantryList.pantryItems.removeAll { item in
-                                selectedItems.contains(item.id)
-                            }
-                        }, label: {
-                            Image(systemName: "trash")
-                        })
+                        if editMode == .active {
+                            Button(action: {
+                                pantryList.pantryItems.removeAll { item in
+                                    selectedItems.contains(item.id)
+                                }
+                            }, label: {
+                                Image(systemName: "trash")
+                            })
+                        }
                         Menu {
                             Toggle(isOn: $sortByExpiryDate) {
                                 Label("Sort by expiry date", systemImage: "calendar")
@@ -67,7 +68,8 @@ struct PantryListDetailView: View {
                         }
                     }
                 }
-                
+                .environment(pantryList)
+                .environment(\.editMode, $editMode)
                 FloatingAddButton(pantryList: pantryList)
             }
             
