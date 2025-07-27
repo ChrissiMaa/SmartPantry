@@ -11,6 +11,7 @@ import SwiftUI
 struct ProductScannerView: View {
     ///CameraService wird beim App-start initialisiert und hierher übergeben
     @EnvironmentObject var cameraService: CameraService
+    // api service instanzieren
     
     @State private var scanMode: ScanMode = .barcode
     @State private var showScanResult = false
@@ -25,6 +26,10 @@ struct ProductScannerView: View {
             
             // Scan-Ergebnis-Overlay (wenn Barcode erkannt wurde)
            if showScanResult, let code = cameraService.scannedCode {
+               // apiservice mit barcode aufrufen
+               // response in model transformieren
+               // Card anzeigen mit infos für user und auswahlmöglichkeit für liste in der gespreichert werden soll
+               
                VStack(spacing: 20) {
                    Text("Barcode erkannt:")
                    Text(code)
@@ -106,14 +111,10 @@ struct ProductScannerView: View {
             }
         }
         .onAppear {
-            DispatchQueue.global(qos: .userInitiated).async {
-                if !cameraService.session.isRunning {
-                    cameraService.session.startRunning()
-                }
-            }
+            cameraService.startCameraSession()
         }
         .onDisappear {
-            cameraService.session.stopRunning()
+            cameraService.stopCameraSession()
         }
     }
 }

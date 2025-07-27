@@ -32,10 +32,28 @@ class CameraService: NSObject, ObservableObject {
 
     var isScanning = true
     
+    var isConfigured = false
+    
     /// Gefundener Barcode als Published, um UI zu benachrichtigen
     @Published var scannedCode: String?
     /// Gefundenes Mindesthaltbarkeitsdatum, um UI zu benachrichtigen
     @Published var detectedDate: String?
+    /// Gefundenes Obst oder Gemüse, um UI zu benachrichtigen
+    @Published var detectedFood: String?
+    
+    // CoreML Modell laden und für die Nutzung in Vision in ein VNCoreMLModel packen
+    private let fruitVegModel: VNCoreMLModel? = {
+        let config = MLModelConfiguration()
+        do {
+            let model = try FruitVegClassifier(configuration: config)
+            return try VNCoreMLModel(for: model.model)
+        } catch {
+            print("Fehler beim Laden des Obst/Gemüse-Modells: \(error)")
+            return nil
+        }
+    }()
+
+
     
     
     /// Initializer – startet die Konfiguration direkt beim Erzeugen.
@@ -46,10 +64,22 @@ class CameraService: NSObject, ObservableObject {
         textRecognitionRequest.recognitionLevel = .accurate
         textRecognitionRequest.recognitionLanguages = ["de-DE"]
         
-        configureSession()
-        // Kamera mit Hintergrund-Thread aufrufen (Verhindert UI Hänger)
+    }
+    
+    func startCameraSession() {
         DispatchQueue.global(qos: .userInitiated).async {
-            self.session.startRunning()
+            if !self.session.isRunning {
+                if (!self.isConfigured) {
+                    self.configureSession()
+                }
+                self.session.startRunning()
+            }
+        }
+    }
+    
+    func stopCameraSession() {
+        if session.isRunning {
+            session.stopRunning()
         }
     }
 
@@ -89,8 +119,7 @@ class CameraService: NSObject, ObservableObject {
                     
         //Konfigurationsänderungen übernehmen
         session.commitConfiguration()
-        
-
+        isConfigured = true
     }
 }
 
@@ -142,6 +171,7 @@ extension CameraService: AVCaptureVideoDataOutputSampleBufferDelegate {
         
         let requestHandler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, options: [:])
         
+        // --- Texterkennung für MHD ---
         textRecognitionRequest = VNRecognizeTextRequest { [weak self] request, error in
             guard let self,
                   let results = request.results as? [VNRecognizedTextObservation] else { return }
@@ -160,6 +190,30 @@ extension CameraService: AVCaptureVideoDataOutputSampleBufferDelegate {
                 }
             }
         }
-        try? requestHandler.perform([textRecognitionRequest])
+        
+        // --- Obst/Gemüse-Erkennung mit (CoreML) ---
+        let fruitVegRequest = VNCoreMLRequest(model: fruitVegModel!) { [weak self] request, error in
+            guard let self,
+                  let results = request.results as? [VNClassificationObservation],
+                  let topResult = results.filter({ $0.hasMinimumPrecision(0.1, forRecall: 0.8)}).first else { return }
+        
+            let confidence = topResult.confidence
+            if confidence > 0.8 {
+                DispatchQueue.main.async {
+                    self.detectedFood = topResult.identifier
+                    print("Obst/Gemüse erkannt: \(topResult.identifier) mit \(Int(topResult.confidence * 100))%")
+                    //self.isScanning = false
+                }
+            } else {
+                DispatchQueue.main.async {
+                    self.detectedFood = nil
+                }
+            }
+
+        }
+        fruitVegRequest.imageCropAndScaleOption = .centerCrop
+        
+        
+        try? requestHandler.perform([textRecognitionRequest, fruitVegRequest])
     }
 }
