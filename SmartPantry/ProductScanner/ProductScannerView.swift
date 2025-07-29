@@ -6,16 +6,25 @@
 //
 
 import SwiftUI
+import SwiftData
 
 ///Übergeordnete SwiftUI View, die das Kamerabild anzeigt
 struct ProductScannerView: View {
     ///CameraService wird beim App-start initialisiert und hierher übergeben
     @EnvironmentObject var cameraService: CameraService
-    // api service instanzieren
+    
+    var apiService: OpenFoodFactsAPIService = OpenFoodFactsAPIService()
     
     @State private var scanMode: ScanMode = .barcode
     @State private var showScanResult = false
     @State private var showDateResult = false
+
+    @State private var newPantryItem: PantryItem?
+    
+    @State private var showProductSheet: Bool = false
+    @State private var errorMessage: String?
+    //@State private var showSuccessMessage: Bool = false
+
 
     var body: some View {
         ZStack {
@@ -23,57 +32,32 @@ struct ProductScannerView: View {
             CameraPreviewView(session: cameraService.session)
                 .edgesIgnoringSafeArea([.top, .horizontal])
 
-            
-            // Scan-Ergebnis-Overlay (wenn Barcode erkannt wurde)
-           if showScanResult, let code = cameraService.scannedCode {
-               // apiservice mit barcode aufrufen
+               // apiservice mit barcode aufrufen ---DONE--- in onChange
                // response in model transformieren
                // Card anzeigen mit infos für user und auswahlmöglichkeit für liste in der gespreichert werden soll
-               
-               VStack(spacing: 20) {
-                   Text("Barcode erkannt:")
-                   Text(code)
-                       .foregroundColor(.green)
-                       .multilineTextAlignment(.center)
-                       .padding()
-                   Button("Fortfahren") {
-                       cameraService.isScanning = true
-                       cameraService.scannedCode = nil
-                       showScanResult = false
-                   }
-                   .padding()
-                   .background(Color.blue)
-                   .foregroundColor(.white)
-                   .cornerRadius(10)
-               }
-               .padding()
-               .background(Color.black.opacity(0.8))
-               .cornerRadius(16)
-               .padding()
-           }
             
-            if showDateResult, let dateString = cameraService.detectedDate {
-                VStack(spacing: 20) {
-                    Text("Datum erkannt:")
-                    Text(dateString)
-                        .foregroundColor(.green)
-                        .multilineTextAlignment(.center)
-                        .padding()
-                    Button("Fortfahren") {
-                        cameraService.isScanning = true
-                        cameraService.detectedDate = nil
-                        showScanResult = false
-                    }
-                    .padding()
-                    .background(Color.blue)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
-                }
-                .padding()
-                .background(Color.black.opacity(0.8))
-                .cornerRadius(16)
-                .padding()
-            }
+//            if showDateResult, let dateString = cameraService.detectedDate {
+//                VStack(spacing: 20) {
+//                    Text("Datum erkannt:")
+//                    Text(dateString)
+//                        .foregroundColor(.green)
+//                        .multilineTextAlignment(.center)
+//                        .padding()
+//                    Button("Fortfahren") {
+//                        cameraService.isScanning = true
+//                        cameraService.detectedDate = nil
+//                        showScanResult = false
+//                    }
+//                    .padding()
+//                    .background(Color.blue)
+//                    .foregroundColor(.white)
+//                    .cornerRadius(10)
+//                }
+//                .padding()
+//                .background(Color.black.opacity(0.8))
+//                .cornerRadius(16)
+//                .padding()
+//            }
             
             
             // Picker + Modus-Anzeige
@@ -100,11 +84,11 @@ struct ProductScannerView: View {
             }
             .padding(.bottom, 0)
         }
-        .onReceive(cameraService.$scannedCode) { code in
-            if code != nil {
-                showScanResult = true
-            }
-        }
+//        .onReceive(cameraService.$detectedCode) { code in
+//            if code != nil {
+//                showScanResult = true
+//            }
+//        }
         .onReceive(cameraService.$detectedDate) { date in
             if date != nil {
                 showDateResult = true
@@ -116,6 +100,85 @@ struct ProductScannerView: View {
         .onDisappear {
             cameraService.stopCameraSession()
         }
+        .onChange(of: cameraService.detectedCode) {
+            guard let code = cameraService.detectedCode else { return }
+            Task {
+                do {
+                    let response = try await apiService.fetchProduct(by: code)
+                    print("Produktinfos:", response)
+                    newPantryItem = toViewModel(response: response)
+                } catch {
+                    errorMessage = error.localizedDescription
+                }
+            }
+            showProductSheet = true
+        }
+        .sheet(isPresented: $showProductSheet) {
+            if newPantryItem != nil {
+                AddScannedProductView(
+                            newPantryItem: Binding(
+                                get: { newPantryItem! },
+                                set: { newPantryItem = $0 }
+                            )
+//                            onSave: {
+//                                showProductSheet = false
+//                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+//                                    withAnimation {
+//                                        showSuccessMessage = true
+//                                        print("SuccessMessage:", showSuccessMessage)
+//                                    }
+//                                }
+//                                
+//                            }
+                            
+                            
+                        )
+                .presentationDetents([.large])
+            } else if let error = errorMessage {
+                //TODO: Fehlermeldung anpassen
+                VStack {
+                    Text("Fehler beim Laden")
+                        .font(.headline)
+                        .padding(.bottom)
+                    Text(error)
+                        .foregroundColor(.red)
+                    Button("Schließen") {
+                        showProductSheet = false
+                    }
+                    .padding(.top)
+                }
+                .padding()
+            }
+        }
+        .onChange(of: showProductSheet) { oldValue, newValue in
+            if oldValue == true && newValue == false {
+                cameraService.detectedCode = nil
+                cameraService.isScanning = true
+            }
+        }
+
+//        .overlay {
+//            Group {
+//                if showSuccessMessage {
+//                    Text ("Produkt hinzugefügt")
+//                        padding()
+//                        .background(Color.black.opacity(0.8))
+//                        .foregroundColor(.white)
+//                        .cornerRadius(10)
+//                        .transition(.opacity)
+//                        .onAppear {
+//                            DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
+//                                withAnimation {
+//                                    showSuccessMessage = false
+//                                }
+//                            }
+//                        }
+//                }
+//            }
+//        }
+        
+
+        
     }
 }
 

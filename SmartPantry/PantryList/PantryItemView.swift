@@ -15,7 +15,8 @@ struct PantryItemView: View {
     @State var isEditingExpiryDate: Bool = false
     @State private var selectedDate: Date? = nil
     
-    
+    @State private var isMinQuantityExpanded: Bool = false
+    @State var selectedMinUnit: Unit = .piece
     
     @State var selectedDiet: DietType = .none
     
@@ -39,59 +40,9 @@ struct PantryItemView: View {
                 Section {
                     PantryItemQuantityView(item: item)
                 }
+                // Haltbarkeitsdatum und Kaufdatum
                 Section {
-                    VStack (alignment: .leading){
-                        Text("Haltbarkeitsdatum").font(.caption)
-                        HStack {
-                            if item.expiryDate == nil {
-                                Button("Hinzufügen") {
-                                    item.expiryDate = Date()
-                                    isEditingExpiryDate = true
-                                }
-                                .buttonStyle(.bordered)
-                            } else {
-                                DatePicker(
-                                    "Haltbarkeitsdatum",
-                                    selection: Binding(
-                                        get: { item.expiryDate ?? Date() },
-                                        set: { item.expiryDate = $0 }
-                                    ),
-                                    in: Date()...,
-                                    displayedComponents: .date
-                                )
-                                .datePickerStyle(.compact)
-                                .labelsHidden()
-                                
-                            }
-                            Spacer()
-                            let daysUntilExpiry = (item.expiryDate ?? Date()).daysUntilExpiry()
-                            
-                            Text(
-                                daysUntilExpiry < 0 ?
-                                 "Abgelaufen" :
-                                daysUntilExpiry == 0 ?
-                                "Läuft heute ab" :
-                                daysUntilExpiry == 1 ?
-                                "Läuft ab in \(daysUntilExpiry) Tag" :
-                                "Läuft ab in \(daysUntilExpiry) Tagen"
-                            )
-                        }
-                            
-                    }
-                    VStack (alignment: .leading) {
-                        Text("Kaufdatum")
-                            .font(.caption)
-                        DatePicker(
-                            "Kaufdatum",
-                            selection: Binding(
-                                get : { item.dateOfPurchase ?? Date() }, //Setzt das Datum im DatePicker
-                                set : { item.dateOfPurchase = $0 } //Setzt item.dateOfPurchase
-                            ),
-                            displayedComponents: .date
-                        )
-                        .datePickerStyle(.compact)
-                        .labelsHidden()
-                    }
+                    PantryItemDatesView(item: item, isEditingExpiryDate: $isEditingExpiryDate)
                 }
                 // TODO: Ggf. sicherstellen, dass nur Zahlen eingegeben werden dürfen
                 Section {
@@ -103,7 +54,6 @@ struct PantryItemView: View {
                         ))
                     }
                 }
-                
                 Section {
                     VStack(alignment: .leading) {
                         Text("Ernährungsform").font(.caption)
@@ -119,15 +69,66 @@ struct PantryItemView: View {
                         //.colorMultiply(.green)
                     }
                 }
+                //Mindestmenge
+                //if item.minimumQuantity != nil {
+                    Section {
+                        HStack {
+                            VStack (alignment: .leading){
+                                Text("Mindestmenge").font(.caption)
+                                HStack {
+                                    TextField("Mindestmenge", text: Binding(
+                                        get : { String(item.quantity) },
+                                        set : {
+                                            if let value = Int($0), value > 0 {
+                                                item.quantity = value
+                                            } else {
+                                                item.quantity = 1
+                                            }
+                                        }
+                                    ))
+                                    .keyboardType(.numberPad)
+                                    
+                                    Stepper("", value: $item.quantity, in: 1...100)
+                                        .labelsHidden()
+                                }
+                               
+                            }
+                            Spacer()
+                            VStack (alignment: .leading){
+                                Text("Einheit").font(.caption)
+                                Picker ("", selection: $selectedMinUnit) {
+                                    ForEach(Unit.allCases) { unit in
+                                        Text(unit.rawValue).tag(unit)
+                                    }
+                                }
+                                .pickerStyle(.navigationLink)
+                                //.labelsHidden()
+                            }
+                        }
+                    }
+               /* } else {
+                    Section {
+                        Button(action: {
+                            //item.ingredients = []
+                            isMinQuantityExpanded = true
+                        }, label: {
+                            HStack {
+                                Image(systemName: "plus")
+                                Text("Mindestmenge hinzufügen")
+                            }
+                        })
+                    }
+                }*/
                 
-            //Nutrients
-            PantryItemNutrientsView(item: item)
-               
-            //Ingredients
-            PantryItemIngredientView(item: item)
-            
-            //Note
-            PantryItemNoteView(item: item)
+                
+                //Nutrients
+                PantryItemNutrientsView(item: item)
+                   
+                //Ingredients
+                PantryItemIngredientView(item: item)
+                
+                //Note
+                PantryItemNoteView(item: item)
                 
                 
             }

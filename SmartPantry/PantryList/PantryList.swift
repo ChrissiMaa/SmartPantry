@@ -13,11 +13,13 @@ class PantryList: Identifiable {
     private(set) var id: UUID //privater Setter, kann nur innerhalb der Klasse gesetzt werden (nicht von aussen)
     var name: String
     @Relationship(deleteRule: .cascade) var pantryItems: [PantryItem] //Relationship zu anderem Model für Swift-Data deklarieren. deleteRule löscht alle Items, wenn Liste gelöscht wird
+    var isDefault: Bool
     
     init(name: String) {
         self.id = UUID()
         self.name = name
         self.pantryItems = []
+        self.isDefault = false
     }
 }
 

@@ -35,7 +35,7 @@ class CameraService: NSObject, ObservableObject {
     var isConfigured = false
     
     /// Gefundener Barcode als Published, um UI zu benachrichtigen
-    @Published var scannedCode: String?
+    @Published var detectedCode: String?
     /// Gefundenes Mindesthaltbarkeitsdatum, um UI zu benachrichtigen
     @Published var detectedDate: String?
     /// Gefundenes Obst oder Gemüse, um UI zu benachrichtigen
@@ -154,7 +154,7 @@ extension CameraService: AVCaptureMetadataOutputObjectsDelegate {
 
            // Ergebnis auf dem Hauptthread publizieren (für UI-Update)
            DispatchQueue.main.async {
-               self.scannedCode = barcode
+               self.detectedCode = barcode
                print("Barcode erkannt: \(barcode)")
            }
     }
