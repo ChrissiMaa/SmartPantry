@@ -42,7 +42,7 @@ struct PantryItemView: View {
                 }
                 // Haltbarkeitsdatum und Kaufdatum
                 Section {
-                    PantryItemDatesView(item: item, isEditingExpiryDate: $isEditingExpiryDate)
+                    PantryItemDatesView(item: item, isEditingExpiryDate: $isEditingExpiryDate, scannerSheet: false)
                 }
                 // TODO: Ggf. sicherstellen, dass nur Zahlen eingegeben werden dürfen
                 Section {

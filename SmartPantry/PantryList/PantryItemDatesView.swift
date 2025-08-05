@@ -12,6 +12,8 @@ struct PantryItemDatesView: View {
     @Bindable var item: PantryItem
     @Binding var isEditingExpiryDate: Bool
     
+    @State var scannerSheet: Bool
+    
     var body: some View {
         VStack (alignment: .leading){
             Text("Haltbarkeitsdatum").font(.caption)
@@ -37,17 +39,28 @@ struct PantryItemDatesView: View {
                     
                 }
                 Spacer()
-                let daysUntilExpiry = (item.expiryDate ?? Date()).daysUntilExpiry()
+                if (!scannerSheet) {
+                    let daysUntilExpiry = (item.expiryDate ?? Date()).daysUntilExpiry()
+                    
+                    Text(
+                        daysUntilExpiry < 0 ?
+                         "Abgelaufen" :
+                        daysUntilExpiry == 0 ?
+                        "Läuft heute ab" :
+                        daysUntilExpiry == 1 ?
+                        "Läuft ab in \(daysUntilExpiry) Tag" :
+                        "Läuft ab in \(daysUntilExpiry) Tagen"
+                    )
+                } else {
+                    Button(action: {
+                        //Datum mit Kamera erfassen
+                    }, label: {
+                        Image(systemName: "camera")
+                            .font(.system(size: 24))
+                            .frame(height: 50)
+                    })
+                }
                 
-                Text(
-                    daysUntilExpiry < 0 ?
-                     "Abgelaufen" :
-                    daysUntilExpiry == 0 ?
-                    "Läuft heute ab" :
-                    daysUntilExpiry == 1 ?
-                    "Läuft ab in \(daysUntilExpiry) Tag" :
-                    "Läuft ab in \(daysUntilExpiry) Tagen"
-                )
             }
                 
         }
@@ -76,7 +89,8 @@ struct PantryItemDatesView: View {
 #Preview {
     PantryItemDatesView(
         item: PantryItem(name: "Testitem"),
-        isEditingExpiryDate: .constant(false)
+        isEditingExpiryDate: .constant(false),
+        scannerSheet: true
     )
     .environment(PantryList(name: "Testvorrat"))
     .modelContainer(for: [PantryItem.self], inMemory: true)

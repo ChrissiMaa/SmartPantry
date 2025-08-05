@@ -48,21 +48,22 @@ struct AddScannedProductView: View {
                             .aspectRatio(contentMode: .fill)
                             .frame(height: 50)
                             .clipped()
-                        TextField("Name", text: $newPantryItem.name)
-                            .font(.largeTitle)
-                            .bold()
-                            .foregroundColor(.gray)
+                        VStack (alignment: .leading){
+                            Text("Name").font(.caption)
+                            TextField("Name", text: $newPantryItem.name)
+                                .foregroundColor(.gray)
+                        }
+                        
                     }
-                }
-                Section {
+                    
+                    
                     PantryItemQuantityView(item: newPantryItem)
-                }
-                // Haltbarkeitsdatum und Kaufdatum
-                Section {
-                    PantryItemDatesView(item: newPantryItem, isEditingExpiryDate: $isEditingExpiryDate)
-                }
-                // TODO: Ggf. sicherstellen, dass nur Zahlen eingegeben werden dürfen
-                Section {
+                
+                    // Haltbarkeitsdatum und Kaufdatum
+                    PantryItemDatesView(item: newPantryItem, isEditingExpiryDate: $isEditingExpiryDate, scannerSheet: true)
+                
+                    // TODO: Ggf. sicherstellen, dass nur Zahlen eingegeben werden dürfen
+                
                     VStack(alignment: .leading) {
                         Text("Barcode").font(.caption)
                         TextField("Barcode", text: Binding(
@@ -70,8 +71,8 @@ struct AddScannedProductView: View {
                             set: { newPantryItem.barcode = $0.isEmpty ? nil : $0 }
                         ))
                     }
-                }
-                Section {
+                
+                
                     VStack(alignment: .leading) {
                         Text("Ernährungsform").font(.caption)
                         Picker("", selection: Binding(
@@ -85,44 +86,11 @@ struct AddScannedProductView: View {
                         .pickerStyle(.segmented)
                         //.colorMultiply(.green)
                     }
-                }
+                
                 //Mindestmenge
                 //if item.minimumQuantity != nil {
-                    Section {
-                        HStack {
-                            VStack (alignment: .leading){
-                                Text("Mindestmenge").font(.caption)
-                                HStack {
-                                    TextField("Mindestmenge", text: Binding(
-                                        get : { String(newPantryItem.quantity) },
-                                        set : {
-                                            if let value = Int($0), value > 0 {
-                                                newPantryItem.quantity = value
-                                            } else {
-                                                newPantryItem.quantity = 1
-                                            }
-                                        }
-                                    ))
-                                    .keyboardType(.numberPad)
-                                    
-                                    Stepper("", value: $newPantryItem.quantity, in: 1...100)
-                                        .labelsHidden()
-                                }
-                               
-                            }
-                            Spacer()
-                            VStack (alignment: .leading){
-                                Text("Einheit").font(.caption)
-                                Picker ("", selection: $selectedMinUnit) {
-                                    ForEach(Unit.allCases) { unit in
-                                        Text(unit.rawValue).tag(unit)
-                                    }
-                                }
-                                .pickerStyle(.navigationLink)
-                                //.labelsHidden()
-                            }
-                        }
-                    }
+                    
+                }
                /* } else {
                     Section {
                         Button(action: {
@@ -193,10 +161,6 @@ struct AddScannedProductView: View {
     }
 
 }
-
-
-
-
 
 
 #Preview {
