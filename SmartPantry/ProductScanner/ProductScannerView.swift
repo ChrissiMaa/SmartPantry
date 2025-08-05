@@ -72,10 +72,6 @@ struct ProductScannerView: View {
                     }
                     .pickerStyle(.segmented)
                     .padding(.horizontal)
-
-                    Text("Modus: \(scanMode.rawValue)")
-                        .font(.subheadline)
-                        .foregroundColor(.white)
                 }
                 .padding(.top, 12)
                 .padding(.bottom, 30)
@@ -96,6 +92,8 @@ struct ProductScannerView: View {
         }
         .onAppear {
             cameraService.startCameraSession()
+            cameraService.detectedCode = nil
+            cameraService.isScanning = true
         }
         .onDisappear {
             cameraService.stopCameraSession()
