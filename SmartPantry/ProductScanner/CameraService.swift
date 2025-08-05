@@ -8,6 +8,15 @@
 import AVFoundation
 import Vision
 
+//Scan-Modi: Barcode oder Obst/Gemüse Erfassung
+enum ScanMode: String, CaseIterable, Identifiable {
+    case barcode = "Barcode"
+    case vision = "Obst/Gemüse"
+    case date = "MHD"
+
+    var id: String { self.rawValue }
+}
+
 /// Kamera-Service, der eine Kamera-Session aufbaut und für die Bildverarbeitung zuständig ist.
 ///
 /// Für die Barcodeerkennung wird `AVCaptureMetadataOutput` verwendet,
@@ -19,6 +28,10 @@ import Vision
 ///
 /// ObservableObject, damit SwiftUI bei Änderungen reagieren kann.
 class CameraService: NSObject, ObservableObject {
+    
+    ///aktueller Scan-Modus, wird von der View gesetzt
+    var scanMode: ScanMode = .barcode
+
     /// Zentrale AVCaptureSession, die Input (Kamera) und Outputs verwaltet.
     let session = AVCaptureSession()
 
@@ -140,8 +153,8 @@ extension CameraService: AVCaptureMetadataOutputObjectsDelegate {
                         didOutput metadataObjects: [AVMetadataObject],
                         from connection: AVCaptureConnection) {
         
-           // Scan stoppen, wenn bereits ein Scan läuft
-           guard isScanning else { return }
+           // Scan stoppen, wenn bereits ein Scan läuft, nur im Barcode-Modus scannen
+        guard isScanning, scanMode == .barcode else { return }
 
            // Erstes erkannte Objekt aus der Liste prüfen
            guard let metadataObj = metadataObjects.first as? AVMetadataMachineReadableCodeObject,
@@ -166,54 +179,64 @@ extension CameraService: AVCaptureVideoDataOutputSampleBufferDelegate {
                        didOutput sampleBuffer: CMSampleBuffer,
                        from connection: AVCaptureConnection) {
         
-        guard isScanning,
-              let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
+        print("captureOutput aufgerufen, scanMode=\(scanMode), isScanning=\(isScanning)")
+        guard isScanning else { return }
+        
+        guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
         
         let requestHandler = VNImageRequestHandler(cvPixelBuffer: pixelBuffer, options: [:])
         
         // --- Texterkennung für MHD ---
-        textRecognitionRequest = VNRecognizeTextRequest { [weak self] request, error in
-            guard let self,
-                  let results = request.results as? [VNRecognizedTextObservation] else { return }
-            
-            for observation in results {
-                guard let candidate = observation.topCandidates(1).first else { continue }
-                let text = candidate.string
+        if scanMode == .date {
+            textRecognitionRequest = VNRecognizeTextRequest { [weak self] request, error in
+                guard let self,
+                      let results = request.results as? [VNRecognizedTextObservation] else { return }
                 
-                let pattern = #"\b(\d{1,2}[./]\d{1,2}([./]\d{2,4})?)\b|\b(\d{1,2}[./]\d{2,4})\b"#
-                if let match = text.range(of: pattern, options: .regularExpression) {
-                    DispatchQueue.main.async {
-                        self.detectedDate = String(text[match])
-                        self.isScanning = false
+                for observation in results {
+                    guard let candidate = observation.topCandidates(1).first else { continue }
+                    let text = candidate.string
+                    
+                    let pattern = #"\b(\d{1,2}[./]\d{1,2}([./]\d{2,4})?)\b|\b(\d{1,2}[./]\d{2,4})\b"#
+                    if let match = text.range(of: pattern, options: .regularExpression) {
+                        DispatchQueue.main.async {
+                            self.detectedDate = String(text[match])
+                            self.isScanning = false
+                        }
+                        break
                     }
-                    break
                 }
             }
         }
+        
         
         // --- Obst/Gemüse-Erkennung mit (CoreML) ---
-        let fruitVegRequest = VNCoreMLRequest(model: fruitVegModel!) { [weak self] request, error in
-            guard let self,
-                  let results = request.results as? [VNClassificationObservation],
-                  let topResult = results.filter({ $0.hasMinimumPrecision(0.1, forRecall: 0.8)}).first else { return }
-        
-            let confidence = topResult.confidence
-            if confidence > 0.8 {
-                DispatchQueue.main.async {
-                    self.detectedFood = topResult.identifier
-                    print("Obst/Gemüse erkannt: \(topResult.identifier) mit \(Int(topResult.confidence * 100))%")
-                    //self.isScanning = false
-                }
-            } else {
-                DispatchQueue.main.async {
-                    self.detectedFood = nil
-                }
-            }
+        if scanMode == .vision {
+            let fruitVegRequest = VNCoreMLRequest(model: fruitVegModel!) { [weak self] request, error in
+                guard let self,
+                      let results = request.results as? [VNClassificationObservation],
+                      let topResult = results.first else { return }
+            
+                let confidence = topResult.confidence
+                if confidence > 0.8 {
+                    DispatchQueue.main.async {
+                        self.detectedFood = topResult.identifier
+                        print("Obst/Gemüse erkannt: \(topResult.identifier) mit \(Int(topResult.confidence * 100))%")
+                        //self.isScanning = false
+                    }
+                } else {
+                    DispatchQueue.main.async {
+                        self.detectedFood = nil
+                        print("kein Kandidat über 80% – höchster war \(results.first?.confidence ?? 0)")
 
+                    }
+                }
+
+            }
+            fruitVegRequest.imageCropAndScaleOption = .centerCrop
+            
+            try? requestHandler.perform([textRecognitionRequest, fruitVegRequest])
         }
-        fruitVegRequest.imageCropAndScaleOption = .centerCrop
         
         
-        try? requestHandler.perform([textRecognitionRequest, fruitVegRequest])
     }
 }

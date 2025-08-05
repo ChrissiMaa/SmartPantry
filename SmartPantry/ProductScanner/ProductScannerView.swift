@@ -60,13 +60,13 @@ struct ProductScannerView: View {
 //            }
             
             
-            // Picker + Modus-Anzeige
+            // Picker für Scan-Modus
             VStack {
                 Spacer()
-
                 VStack(spacing: 12) {
                     Picker("Scan-Modus", selection: $scanMode) {
-                        ForEach(ScanMode.allCases) { mode in
+                        ForEach([ScanMode.barcode, ScanMode.vision]) { mode in
+                            
                             Text(mode.rawValue).tag(mode)
                         }
                     }
@@ -78,7 +78,7 @@ struct ProductScannerView: View {
                 .frame(maxWidth: .infinity)
                 .background(Color.black.opacity(0.6))
             }
-            .padding(.bottom, 0)
+            
         }
 //        .onReceive(cameraService.$detectedCode) { code in
 //            if code != nil {
@@ -91,13 +91,25 @@ struct ProductScannerView: View {
             }
         }
         .onAppear {
+            cameraService.scanMode = scanMode
             cameraService.startCameraSession()
+            // alle alten Ergebnisse löschen
             cameraService.detectedCode = nil
+            cameraService.detectedFood = nil
+            cameraService.detectedDate = nil
+            // wieder scannen erlauben
             cameraService.isScanning = true
         }
-        .onDisappear {
-            cameraService.stopCameraSession()
-        }
+        .onChange(of: scanMode) { oldMode, newMode in
+                    cameraService.scanMode = newMode
+                    // alle alten Ergebnisse löschen
+                    cameraService.detectedCode = nil
+                    cameraService.detectedFood = nil
+                    cameraService.detectedDate = nil
+                    // wieder scannen erlauben
+                    cameraService.isScanning = true
+                }
+        
         .onChange(of: cameraService.detectedCode) {
             guard let code = cameraService.detectedCode else { return }
             Task {
@@ -149,10 +161,13 @@ struct ProductScannerView: View {
             }
         }
         .onChange(of: showProductSheet) { oldValue, newValue in
-            if oldValue == true && newValue == false {
+            if oldValue && !newValue {
                 cameraService.detectedCode = nil
                 cameraService.isScanning = true
             }
+        }
+        .onDisappear {
+            cameraService.stopCameraSession()
         }
 
 //        .overlay {
@@ -178,14 +193,6 @@ struct ProductScannerView: View {
 
         
     }
-}
-
-
-enum ScanMode: String, CaseIterable, Identifiable {
-    case barcode = "Barcode"
-    case vision = "Obst/Gemüse"
-
-    var id: String { self.rawValue }
 }
 
 
