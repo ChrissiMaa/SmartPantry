@@ -31,8 +31,6 @@ struct AddScannedProductView: View {
                     VStack(spacing: 20) {
                         Text("Fehler beim Laden, versuche es erneut")
                             .font(.headline)
-                        Text(error)
-                            .foregroundColor(.red)
                         Button("Schließen") {
                             dismiss()
                         }

@@ -189,11 +189,11 @@ extension CameraService: AVCaptureVideoDataOutputSampleBufferDelegate {
             textRecognitionRequest = VNRecognizeTextRequest { [weak self] request, error in
                 guard let self,
                       let results = request.results as? [VNRecognizedTextObservation] else { return }
-                
+                print("Results: \(results)")
                 for observation in results {
                     guard let candidate = observation.topCandidates(1).first else { continue }
                     let text = candidate.string
-                    
+                    print ("Text: \(text)")
                     let pattern = #"\b(\d{1,2}[./]\d{1,2}([./]\d{2,4})?)\b|\b(\d{1,2}[./]\d{2,4})\b"#
                     if let match = text.range(of: pattern, options: .regularExpression) {
                         let scannedDate = String(text[match])
@@ -206,6 +206,7 @@ extension CameraService: AVCaptureVideoDataOutputSampleBufferDelegate {
                     }
                 }
             }
+            try? requestHandler.perform([textRecognitionRequest])
         }
         
         
@@ -234,7 +235,7 @@ extension CameraService: AVCaptureVideoDataOutputSampleBufferDelegate {
             }
             fruitVegRequest.imageCropAndScaleOption = .centerCrop
             
-            try? requestHandler.perform([textRecognitionRequest, fruitVegRequest])
+            try? requestHandler.perform([fruitVegRequest])
         }
         
         
