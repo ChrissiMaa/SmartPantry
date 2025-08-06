@@ -40,9 +40,9 @@ class CameraService: NSObject, ObservableObject {
     
     private var textRecognitionRequest = VNRecognizeTextRequest()
 
-    var isScanning = true
+    var isScanning: Bool = true
     
-    var isConfigured = false
+    var isConfigured: Bool = false
     
     ///aktueller Scan-Modus, wird von der View gesetzt
     @Published var scanMode: ScanMode = .barcode
@@ -196,8 +196,10 @@ extension CameraService: AVCaptureVideoDataOutputSampleBufferDelegate {
                     
                     let pattern = #"\b(\d{1,2}[./]\d{1,2}([./]\d{2,4})?)\b|\b(\d{1,2}[./]\d{2,4})\b"#
                     if let match = text.range(of: pattern, options: .regularExpression) {
+                        let scannedDate = String(text[match])
                         DispatchQueue.main.async {
-                            self.detectedDate = String(text[match])
+                            self.detectedDate = scannedDate
+                            print("MHD erkannt: \(scannedDate)")
                             self.isScanning = false
                         }
                         break

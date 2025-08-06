@@ -18,13 +18,13 @@ struct ProductScannerView: View {
     @State private var showScanResult = false
     @State private var showDateResult = false
 
-    @State private var newPantryItem: PantryItem?
+    @State private var newPantryItem: PantryItem = PantryItem(name: "")
     
     @State private var showProductSheet: Bool = false
     @State private var errorMessage: String?
     //@State private var showSuccessMessage: Bool = false
     @State private var sheetDetent: PresentationDetent = .large
-
+    @State private var isProductLoaded: Bool = false
 
 
     var body: some View {
@@ -108,63 +108,40 @@ struct ProductScannerView: View {
         }
         
         .onChange(of: cameraService.detectedCode) {
-            guard let code = cameraService.detectedCode else { return }
+            guard let barcode = cameraService.detectedCode else { return }
+            isProductLoaded = false
+            
             Task {
                 do {
-                    let response = try await apiService.fetchProduct(by: code)
+                    let response = try await apiService.fetchProduct(by: barcode)
                     print("Produktinfos:", response)
                     newPantryItem = toViewModel(response: response)
+                    isProductLoaded = true
                 } catch {
                     errorMessage = error.localizedDescription
                 }
             }
             showProductSheet = true
         }
-        .sheet(isPresented: $showProductSheet) {
-            if newPantryItem != nil {
-                AddScannedProductView(
-                            newPantryItem: Binding(
-                                get: { newPantryItem! },
-                                set: { newPantryItem = $0 }
-                            ),
-                            sheetDetent: $sheetDetent
-//                            onSave: {
-//                                showProductSheet = false
-//                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-//                                    withAnimation {
-//                                        showSuccessMessage = true
-//                                        print("SuccessMessage:", showSuccessMessage)
-//                                    }
-//                                }
-//                                
-//                            }
-                            
-                            
-                        )
-                        .presentationDetents([.fraction(0.15), .large],
-                                         selection: $sheetDetent)
-                        .presentationDragIndicator(.visible)
-            } else if let error = errorMessage {
-                //TODO: Fehlermeldung anpassen
-                VStack {
-                    Text("Fehler beim Laden")
-                        .font(.headline)
-                        .padding(.bottom)
-                    Text(error)
-                        .foregroundColor(.red)
-                    Button("Schließen") {
-                        showProductSheet = false
-                    }
-                    .padding(.top)
-                }
-                .padding()
-            }
-        }
-        .onChange(of: showProductSheet) { oldValue, newValue in
-            if oldValue && !newValue {
-                cameraService.detectedCode = nil
-                cameraService.isScanning = true
-            }
+        .sheet(isPresented: $showProductSheet,
+               onDismiss: {
+            cameraService.detectedCode = nil
+            cameraService.isScanning = true
+            showProductSheet = false
+        }) {
+            AddScannedProductView(
+                newPantryItem: Binding(
+                    get: { newPantryItem },
+                    set: { newPantryItem = $0 }
+                ),
+                sheetDetent: $sheetDetent,
+                errorMessage: $errorMessage,
+                isProductLoaded: $isProductLoaded
+                
+            )
+            .presentationDetents([.fraction(0.15), .large],
+                                 selection: $sheetDetent)
+            .presentationDragIndicator(.visible)
         }
         .onDisappear {
             cameraService.stopCameraSession()
