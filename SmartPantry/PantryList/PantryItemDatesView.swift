@@ -67,6 +67,14 @@ struct PantryItemDatesView: View {
             }
                 
         }
+        .onChange(of: item.expiryDate) { oldValue, newValue in
+            guard newValue != oldValue else { return }
+            NotificationService.shared.removeNotification(for: item)
+            if newValue != nil {
+                NotificationService.shared.scheduleNotification(for: item)
+            }
+        }
+
         HStack {
             VStack (alignment: .leading) {
                 Text("Kaufdatum").font(.caption)

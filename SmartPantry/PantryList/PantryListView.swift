@@ -22,7 +22,7 @@ struct PantryListView: View {
                     }
                     .swipeActions {
                         Button("Löschen", role: .destructive) {
-                            modelContext.delete(pantryList)
+                            deletePantryList(pantryList: pantryList)
                         }
                     }
                 }
@@ -38,6 +38,13 @@ struct PantryListView: View {
                 PantryListDetailView(pantryList: pantryList)
             }
         }
+    }
+    
+    func deletePantryList(pantryList: PantryList) {
+        for pantryItem in pantryList.pantryItems {
+            NotificationService.shared.removeNotification(for: pantryItem)
+        }
+        modelContext.delete(pantryList)
     }
 }
 

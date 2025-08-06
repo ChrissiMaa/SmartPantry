@@ -38,6 +38,7 @@ struct PantryItemButton: View {
         }
         .swipeActions {
             Button("Löschen", role: .destructive) {
+                NotificationService.shared.removeNotification(for: item)
                 let index = pantryList.pantryItems.firstIndex(where: { shoppingItem in
                     shoppingItem.id == item.id
                 })

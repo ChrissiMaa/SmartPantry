@@ -10,6 +10,9 @@ import SwiftData
 
 @main
 struct SmartPantryApp: App {
+    init() {
+        NotificationService.shared.requestAuthorization()
+    }
     //Kamera-Service initialisieren
     @StateObject var cameraService = CameraService()
     
