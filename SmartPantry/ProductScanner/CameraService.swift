@@ -29,9 +29,6 @@ enum ScanMode: String, CaseIterable, Identifiable {
 /// ObservableObject, damit SwiftUI bei Änderungen reagieren kann.
 class CameraService: NSObject, ObservableObject {
     
-    ///aktueller Scan-Modus, wird von der View gesetzt
-    var scanMode: ScanMode = .barcode
-
     /// Zentrale AVCaptureSession, die Input (Kamera) und Outputs verwaltet.
     let session = AVCaptureSession()
 
@@ -46,6 +43,9 @@ class CameraService: NSObject, ObservableObject {
     var isScanning = true
     
     var isConfigured = false
+    
+    ///aktueller Scan-Modus, wird von der View gesetzt
+    @Published var scanMode: ScanMode = .barcode
     
     /// Gefundener Barcode als Published, um UI zu benachrichtigen
     @Published var detectedCode: String?
@@ -66,8 +66,6 @@ class CameraService: NSObject, ObservableObject {
         }
     }()
 
-
-    
     
     /// Initializer – startet die Konfiguration direkt beim Erzeugen.
     /// Ruft den Konstruktor von NSObjekt auf

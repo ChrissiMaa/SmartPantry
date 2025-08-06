@@ -15,7 +15,6 @@ struct ProductScannerView: View {
     
     var apiService: OpenFoodFactsAPIService = OpenFoodFactsAPIService()
     
-    @State private var scanMode: ScanMode = .barcode
     @State private var showScanResult = false
     @State private var showDateResult = false
 
@@ -24,6 +23,8 @@ struct ProductScannerView: View {
     @State private var showProductSheet: Bool = false
     @State private var errorMessage: String?
     //@State private var showSuccessMessage: Bool = false
+    @State private var sheetDetent: PresentationDetent = .large
+
 
 
     var body: some View {
@@ -64,7 +65,7 @@ struct ProductScannerView: View {
             VStack {
                 Spacer()
                 VStack(spacing: 12) {
-                    Picker("Scan-Modus", selection: $scanMode) {
+                    Picker("Scan-Modus", selection: $cameraService.scanMode) {
                         ForEach([ScanMode.barcode, ScanMode.vision]) { mode in
                             
                             Text(mode.rawValue).tag(mode)
@@ -91,7 +92,6 @@ struct ProductScannerView: View {
             }
         }
         .onAppear {
-            cameraService.scanMode = scanMode
             cameraService.startCameraSession()
             // alle alten Ergebnisse löschen
             cameraService.detectedCode = nil
@@ -100,15 +100,12 @@ struct ProductScannerView: View {
             // wieder scannen erlauben
             cameraService.isScanning = true
         }
-        .onChange(of: scanMode) { oldMode, newMode in
-                    cameraService.scanMode = newMode
-                    // alle alten Ergebnisse löschen
-                    cameraService.detectedCode = nil
-                    cameraService.detectedFood = nil
-                    cameraService.detectedDate = nil
-                    // wieder scannen erlauben
-                    cameraService.isScanning = true
-                }
+        .onChange(of: cameraService.scanMode) {
+            cameraService.detectedCode = nil
+            cameraService.detectedFood = nil
+            cameraService.detectedDate = nil
+            cameraService.isScanning = true
+        }
         
         .onChange(of: cameraService.detectedCode) {
             guard let code = cameraService.detectedCode else { return }
@@ -129,7 +126,8 @@ struct ProductScannerView: View {
                             newPantryItem: Binding(
                                 get: { newPantryItem! },
                                 set: { newPantryItem = $0 }
-                            )
+                            ),
+                            sheetDetent: $sheetDetent
 //                            onSave: {
 //                                showProductSheet = false
 //                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
@@ -143,7 +141,9 @@ struct ProductScannerView: View {
                             
                             
                         )
-                .presentationDetents([.large])
+                        .presentationDetents([.fraction(0.15), .large],
+                                         selection: $sheetDetent)
+                        .presentationDragIndicator(.visible)
             } else if let error = errorMessage {
                 //TODO: Fehlermeldung anpassen
                 VStack {

@@ -9,10 +9,15 @@ import SwiftUI
 import SwiftData
 
 struct PantryItemDatesView: View {
+    
+    @EnvironmentObject var cameraService: CameraService
+
     @Bindable var item: PantryItem
     @Binding var isEditingExpiryDate: Bool
     
     @State var scannerSheet: Bool
+    var sheetDetent: Binding<PresentationDetent>? = nil //Optionales Binding
+
     
     var body: some View {
         VStack (alignment: .leading){
@@ -52,13 +57,11 @@ struct PantryItemDatesView: View {
                         "Läuft ab in \(daysUntilExpiry) Tagen"
                     )
                 } else {
-                    Button(action: {
-                        //Datum mit Kamera erfassen
-                    }, label: {
-                        Image(systemName: "camera")
-                            .font(.system(size: 24))
-                            .frame(height: 50)
-                    })
+                    Button("Datum scannen") {
+                        sheetDetent?.wrappedValue = .fraction(0.15)
+                        cameraService.scanMode = .date
+                    }
+                    .buttonStyle(.bordered)
                 }
                 
             }
@@ -90,7 +93,8 @@ struct PantryItemDatesView: View {
     PantryItemDatesView(
         item: PantryItem(name: "Testitem"),
         isEditingExpiryDate: .constant(false),
-        scannerSheet: true
+        scannerSheet: true,
+        sheetDetent: .constant(.large)
     )
     .environment(PantryList(name: "Testvorrat"))
     .modelContainer(for: [PantryItem.self], inMemory: true)

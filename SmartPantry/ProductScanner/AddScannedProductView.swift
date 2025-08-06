@@ -16,6 +16,8 @@ struct AddScannedProductView: View {
     @State private var isEditingExpiryDate: Bool = false
     @State private var selectedMinUnit: Unit = .piece
     
+    @Binding var sheetDetent: PresentationDetent
+    
     @Environment(\.modelContext) var modelContext
     @Environment(\.dismiss) var dismiss
     //var onSave: () -> Void
@@ -60,7 +62,11 @@ struct AddScannedProductView: View {
                     PantryItemQuantityView(item: newPantryItem)
                 
                     // Haltbarkeitsdatum und Kaufdatum
-                    PantryItemDatesView(item: newPantryItem, isEditingExpiryDate: $isEditingExpiryDate, scannerSheet: true)
+                    PantryItemDatesView(
+                        item: newPantryItem,
+                        isEditingExpiryDate: $isEditingExpiryDate,
+                        scannerSheet: true,
+                        sheetDetent: $sheetDetent)
                 
                     // TODO: Ggf. sicherstellen, dass nur Zahlen eingegeben werden dürfen
                 
@@ -166,9 +172,10 @@ struct AddScannedProductView: View {
 #Preview {
     struct AddScannedProductViewPreviewWrapper: View {
         @State private var sampleItem = PantryItem(name: "Testprodukt")
+        @State private var sheetDetent: PresentationDetent = .large
             
         var body: some View {
-            AddScannedProductView(newPantryItem: $sampleItem)
+            AddScannedProductView(newPantryItem: $sampleItem, sheetDetent: $sheetDetent)
         }
     }
     
