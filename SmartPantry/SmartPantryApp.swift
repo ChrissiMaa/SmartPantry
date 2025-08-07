@@ -19,6 +19,7 @@ struct SmartPantryApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .preferredColorScheme(.dark)
                 .environmentObject(cameraService)
                 .modelContainer(for: [
                     ShoppingList.self,
