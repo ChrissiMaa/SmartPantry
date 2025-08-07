@@ -172,6 +172,7 @@ struct AddScannedProductForm: View {
         
         var body: some View {
             AddScannedProductForm(newPantryItem: $sampleItem, sheetDetent: $sheetDetent)
+                .environmentObject(CameraService())
         }
     }
     

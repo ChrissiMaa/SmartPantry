@@ -30,13 +30,15 @@ struct PantryItemDatesView: View {
                     }
                     .buttonStyle(.bordered)
                 } else {
+                    let startOfToday = Calendar.current.startOfDay(for: Date())
+                    
                     DatePicker(
                         "Haltbarkeitsdatum",
                         selection: Binding(
                             get: { item.expiryDate ?? Date() },
                             set: { item.expiryDate = $0 }
                         ),
-                        in: Date()...,
+                        in: startOfToday...,
                         displayedComponents: .date
                     )
                     .datePickerStyle(.compact)
@@ -59,7 +61,10 @@ struct PantryItemDatesView: View {
                 } else {
                     Button("Datum scannen") {
                         sheetDetent?.wrappedValue = .fraction(0.15)
+                        
+                        cameraService.detectedDate = nil
                         cameraService.scanMode = .date
+                        cameraService.isScanning = true
                     }
                     .buttonStyle(.bordered)
                 }
@@ -73,6 +78,16 @@ struct PantryItemDatesView: View {
             if newValue != nil {
                 NotificationService.shared.scheduleNotification(for: item)
             }
+        }
+        .onChange(of: cameraService.detectedDate) { oldDate, newDate in
+            guard let parsedDate = newDate else { return }
+            item.expiryDate = parsedDate
+            isEditingExpiryDate = false
+            withAnimation(.snappy) {
+                           sheetDetent?.wrappedValue = .large
+                       }
+            cameraService.isScanning = false
+
         }
 
         HStack {
@@ -104,6 +119,7 @@ struct PantryItemDatesView: View {
         scannerSheet: true,
         sheetDetent: .constant(.large)
     )
+    .environmentObject(CameraService())
     .environment(PantryList(name: "Testvorrat"))
     .modelContainer(for: [PantryItem.self], inMemory: true)
 }

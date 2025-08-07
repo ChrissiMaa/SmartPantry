@@ -81,11 +81,6 @@ struct ProductScannerView: View {
             }
             
         }
-//        .onReceive(cameraService.$detectedCode) { code in
-//            if code != nil {
-//                showScanResult = true
-//            }
-//        }
         .onReceive(cameraService.$detectedDate) { date in
             if date != nil {
                 showDateResult = true
@@ -127,6 +122,7 @@ struct ProductScannerView: View {
                onDismiss: {
             cameraService.detectedCode = nil
             cameraService.isScanning = true
+            cameraService.scanMode = .barcode
             showProductSheet = false
         }) {
             AddScannedProductView(
@@ -145,6 +141,17 @@ struct ProductScannerView: View {
         }
         .onDisappear {
             cameraService.stopCameraSession()
+        }
+        .onChange(of: cameraService.detectedDate) { oldDate, newDate in
+            guard oldDate == nil, newDate != nil else { return }
+            
+                cameraService.isScanning = false
+
+                // Sheet hochfahren
+                withAnimation(.snappy) {
+                    sheetDetent = .large
+                }
+            
         }
 
 //        .overlay {

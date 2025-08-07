@@ -50,7 +50,7 @@ class CameraService: NSObject, ObservableObject {
     /// Gefundener Barcode als Published, um UI zu benachrichtigen
     @Published var detectedCode: String?
     /// Gefundenes Mindesthaltbarkeitsdatum, um UI zu benachrichtigen
-    @Published var detectedDate: String?
+    @Published var detectedDate: Date?
     /// Gefundenes Obst oder Gemüse, um UI zu benachrichtigen
     @Published var detectedFood: String?
     
@@ -198,8 +198,9 @@ extension CameraService: AVCaptureVideoDataOutputSampleBufferDelegate {
                     if let match = text.range(of: pattern, options: .regularExpression) {
                         let scannedDate = String(text[match])
                         DispatchQueue.main.async {
-                            self.detectedDate = scannedDate
+                            self.detectedDate = ExpiryDateParser.parseDateString(scannedDate)
                             print("MHD erkannt: \(scannedDate)")
+                            print("DetectedDate: \(self.detectedDate ?? Date())")
                             self.isScanning = false
                         }
                         break
