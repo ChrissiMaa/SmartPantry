@@ -19,8 +19,8 @@ struct ProductScannerView: View {
     
     @State private var showFruitVegSheet: Bool = false
     @State private var showProductSheet: Bool = false
+    
     @State private var errorMessage: String?
-    //@State private var showSuccessMessage: Bool = false
     @State private var sheetDetent: PresentationDetent = .large
     @State private var isProductLoaded: Bool = false
 
@@ -31,15 +31,12 @@ struct ProductScannerView: View {
             CameraPreviewView(session: cameraService.session)
                 .edgesIgnoringSafeArea([.top, .horizontal])
             
-            
-            
             // Picker für Scan-Modus
             VStack {
                 Spacer()
                 VStack(spacing: 12) {
                     Picker("Scan-Modus", selection: $cameraService.scanMode) {
                         ForEach([ScanMode.barcode, ScanMode.vision]) { mode in
-                            
                             Text(mode.rawValue).tag(mode)
                         }
                     }
@@ -51,7 +48,6 @@ struct ProductScannerView: View {
                 .frame(maxWidth: .infinity)
                 .background(Color.black.opacity(0.6))
             }
-            
         }
         .onAppear {
             cameraService.startCameraSession()
@@ -69,6 +65,7 @@ struct ProductScannerView: View {
             cameraService.isScanning = true
         }
         
+        //Barcode
         .onChange(of: cameraService.detectedCode) {
             guard let barcode = cameraService.detectedCode else { return }
             isProductLoaded = false
@@ -120,6 +117,36 @@ struct ProductScannerView: View {
                 }
             
         }
+        
+        //Obst/Gemüse Erkennung
+        .onChange(of: cameraService.detectedFruitVeg) { oldValue, newValue in
+            guard oldValue == nil, let name = newValue, !name.isEmpty else { return }
+                // Item für das Sheet vorbereiten (bearbeitbar im Sheet)
+                newPantryItem = PantryItem(name: name)
+
+                // Optional Kamera pausieren, damit das Sheet stabil öffnet
+                cameraService.isScanning = false
+
+                // Sheet öffnen & groß zeigen
+                sheetDetent = .large
+                showFruitVegSheet = true
+        }
+        .sheet(isPresented: $showFruitVegSheet, onDismiss: {
+            cameraService.detectedFruitVeg = nil
+            //Kurz pausieren, damit das sheet nicht sofort wieder geöffnet wird
+            //Notwenig, weil KI-Modell noch nicht korrekt funktioniert
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                   cameraService.isScanning = true
+               }
+            showFruitVegSheet = false
+        }) {
+            AddFruitVegView(
+                newPantryItem: $newPantryItem,
+                sheetDetent: $sheetDetent
+            )
+        }
+        .presentationDetents([.fraction(0.15), .large], selection: $sheetDetent)
+        .presentationDragIndicator(.visible)
 
     }
 }

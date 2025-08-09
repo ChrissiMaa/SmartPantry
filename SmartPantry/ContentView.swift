@@ -14,7 +14,7 @@ struct ContentView: View {
             Tab("Einkaufslisten", systemImage: "cart") {
                 ShoppingListView()
             }
-            Tab("Erfassen", systemImage: "barcode.viewfinder") {
+            Tab("Produkte Scannen", systemImage: "barcode.viewfinder") {
                 ProductScannerView()
             }
             Tab("Vorratslisten", systemImage: "carrot") {

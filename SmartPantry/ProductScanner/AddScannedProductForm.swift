@@ -29,7 +29,6 @@ struct AddScannedProductForm: View {
                     ForEach(pantryLists) { pantryList in
                         Button {
                             selectPantryListAsDefault(pantryList)
-                            
                         } label: {
                             Label (pantryList.name, systemImage: selectedPantryList == pantryList ? "checkmark" : "")
                             
@@ -44,7 +43,7 @@ struct AddScannedProductForm: View {
             }
             Section {
                 ZStack(alignment: .bottomLeading) {
-                    Image("Salat")
+                    Image("")
                         .resizable()
                         .aspectRatio(contentMode: .fill)
                         .frame(height: 50)
@@ -134,8 +133,6 @@ struct AddScannedProductForm: View {
                     guard let pantryList = selectedPantryList else { return }
                     pantryList.pantryItems.append(newPantryItem)
                     dismiss()
-                    //onSave()
-                    
                 }
             }
             

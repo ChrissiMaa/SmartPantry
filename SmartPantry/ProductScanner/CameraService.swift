@@ -217,11 +217,13 @@ extension CameraService: AVCaptureVideoDataOutputSampleBufferDelegate {
                 guard let self,
                       let results = request.results as? [VNClassificationObservation],
                       let topResult = results.first else { return }
-            
+                
                 let confidence = topResult.confidence
                 if confidence > 0.8 {
                     DispatchQueue.main.async {
                         self.detectedFruitVeg = topResult.identifier
+                        self.detectedFruitVeg = self.cleanLabel(label: self.detectedFruitVeg ?? "")
+                        
                         print("Obst/Gemüse erkannt: \(topResult.identifier) mit \(Int(topResult.confidence * 100))%")
                         //self.isScanning = false
                     }
@@ -229,16 +231,24 @@ extension CameraService: AVCaptureVideoDataOutputSampleBufferDelegate {
                     DispatchQueue.main.async {
                         self.detectedFruitVeg = nil
                         print("kein Kandidat über 80% – höchster war \(results.first?.confidence ?? 0)")
-
+                        
                     }
                 }
-
+                
             }
             fruitVegRequest.imageCropAndScaleOption = .centerCrop
             
             try? requestHandler.perform([fruitVegRequest])
         }
-        
-        
     }
+    
+    private func cleanLabel(label: String) -> String {
+        label.replacingOccurrences(
+            of: #"\s\d$"#,
+            with: "",
+            options: .regularExpression
+        )
+        .trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+    
 }
