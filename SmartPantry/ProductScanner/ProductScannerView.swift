@@ -14,12 +14,10 @@ struct ProductScannerView: View {
     @EnvironmentObject var cameraService: CameraService
     
     var apiService: OpenFoodFactsAPIService = OpenFoodFactsAPIService()
-    
-    @State private var showScanResult = false
-    @State private var showDateResult = false
 
     @State private var newPantryItem: PantryItem = PantryItem(name: "")
     
+    @State private var showFruitVegSheet: Bool = false
     @State private var showProductSheet: Bool = false
     @State private var errorMessage: String?
     //@State private var showSuccessMessage: Bool = false
@@ -32,33 +30,7 @@ struct ProductScannerView: View {
             //Live-Kamera
             CameraPreviewView(session: cameraService.session)
                 .edgesIgnoringSafeArea([.top, .horizontal])
-
-               // apiservice mit barcode aufrufen ---DONE--- in onChange
-               // response in model transformieren
-               // Card anzeigen mit infos für user und auswahlmöglichkeit für liste in der gespreichert werden soll
             
-//            if showDateResult, let dateString = cameraService.detectedDate {
-//                VStack(spacing: 20) {
-//                    Text("Datum erkannt:")
-//                    Text(dateString)
-//                        .foregroundColor(.green)
-//                        .multilineTextAlignment(.center)
-//                        .padding()
-//                    Button("Fortfahren") {
-//                        cameraService.isScanning = true
-//                        cameraService.detectedDate = nil
-//                        showScanResult = false
-//                    }
-//                    .padding()
-//                    .background(Color.blue)
-//                    .foregroundColor(.white)
-//                    .cornerRadius(10)
-//                }
-//                .padding()
-//                .background(Color.black.opacity(0.8))
-//                .cornerRadius(16)
-//                .padding()
-//            }
             
             
             // Picker für Scan-Modus
@@ -81,23 +53,18 @@ struct ProductScannerView: View {
             }
             
         }
-        .onReceive(cameraService.$detectedDate) { date in
-            if date != nil {
-                showDateResult = true
-            }
-        }
         .onAppear {
             cameraService.startCameraSession()
             // alle alten Ergebnisse löschen
             cameraService.detectedCode = nil
-            cameraService.detectedFood = nil
+            cameraService.detectedFruitVeg = nil
             cameraService.detectedDate = nil
             // wieder scannen erlauben
             cameraService.isScanning = true
         }
         .onChange(of: cameraService.scanMode) {
             cameraService.detectedCode = nil
-            cameraService.detectedFood = nil
+            cameraService.detectedFruitVeg = nil
             cameraService.detectedDate = nil
             cameraService.isScanning = true
         }
@@ -154,28 +121,6 @@ struct ProductScannerView: View {
             
         }
 
-//        .overlay {
-//            Group {
-//                if showSuccessMessage {
-//                    Text ("Produkt hinzugefügt")
-//                        padding()
-//                        .background(Color.black.opacity(0.8))
-//                        .foregroundColor(.white)
-//                        .cornerRadius(10)
-//                        .transition(.opacity)
-//                        .onAppear {
-//                            DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
-//                                withAnimation {
-//                                    showSuccessMessage = false
-//                                }
-//                            }
-//                        }
-//                }
-//            }
-//        }
-        
-
-        
     }
 }
 

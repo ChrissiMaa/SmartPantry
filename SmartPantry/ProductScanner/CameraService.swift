@@ -52,7 +52,7 @@ class CameraService: NSObject, ObservableObject {
     /// Gefundenes Mindesthaltbarkeitsdatum, um UI zu benachrichtigen
     @Published var detectedDate: Date?
     /// Gefundenes Obst oder Gemüse, um UI zu benachrichtigen
-    @Published var detectedFood: String?
+    @Published var detectedFruitVeg: String?
     
     // CoreML Modell laden und für die Nutzung in Vision in ein VNCoreMLModel packen
     private let fruitVegModel: VNCoreMLModel? = {
@@ -221,13 +221,13 @@ extension CameraService: AVCaptureVideoDataOutputSampleBufferDelegate {
                 let confidence = topResult.confidence
                 if confidence > 0.8 {
                     DispatchQueue.main.async {
-                        self.detectedFood = topResult.identifier
+                        self.detectedFruitVeg = topResult.identifier
                         print("Obst/Gemüse erkannt: \(topResult.identifier) mit \(Int(topResult.confidence * 100))%")
                         //self.isScanning = false
                     }
                 } else {
                     DispatchQueue.main.async {
-                        self.detectedFood = nil
+                        self.detectedFruitVeg = nil
                         print("kein Kandidat über 80% – höchster war \(results.first?.confidence ?? 0)")
 
                     }
