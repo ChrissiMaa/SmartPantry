@@ -118,6 +118,11 @@ struct PantryItemNutrientsView: View {
                             isFocused: _isFatFocused
                         )
                     }
+                    .swipeActions {
+                        Button("Löschen", role: .destructive) {
+                            item.nutrients = nil
+                        }
+                    }
                 }
             }
         } else {

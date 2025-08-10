@@ -47,17 +47,19 @@ struct PantryItemDatesView: View {
                 }
                 Spacer()
                 if (!scannerSheet) {
-                    let daysUntilExpiry = (item.expiryDate ?? Date()).daysUntilExpiry()
-                    
-                    Text(
-                        daysUntilExpiry < 0 ?
-                         "Abgelaufen" :
-                        daysUntilExpiry == 0 ?
-                        "Läuft heute ab" :
-                        daysUntilExpiry == 1 ?
-                        "Läuft ab in \(daysUntilExpiry) Tag" :
-                        "Läuft ab in \(daysUntilExpiry) Tagen"
-                    )
+                    if let expiry = item.expiryDate {
+                            let daysUntilExpiry = expiry.daysUntilExpiry()
+                            
+                            Text(
+                                daysUntilExpiry < 0 ?
+                                 "Abgelaufen" :
+                                daysUntilExpiry == 0 ?
+                                "Läuft heute ab" :
+                                daysUntilExpiry == 1 ?
+                                "Läuft ab in \(daysUntilExpiry) Tag" :
+                                "Läuft ab in \(daysUntilExpiry) Tagen"
+                            )
+                        }
                 } else {
                     Button("Datum scannen") {
                         sheetDetent?.wrappedValue = .fraction(0.15)

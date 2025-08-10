@@ -32,6 +32,7 @@ struct PantryItemIngredientView: View {
                                         }
                                     }
                                 ))
+                                .frame(minHeight: 200)
                                 .swipeActions {
                                     Button("Löschen", role: .destructive) {
                                         item.ingredients = nil
