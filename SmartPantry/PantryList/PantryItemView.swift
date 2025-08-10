@@ -69,57 +69,6 @@ struct PantryItemView: View {
                         //.colorMultiply(.green)
                     }
                 }
-                //Mindestmenge
-                //if item.minimumQuantity != nil {
-                    Section {
-                        HStack {
-                            VStack (alignment: .leading){
-                                Text("Mindestmenge").font(.caption)
-                                HStack {
-                                    TextField("Mindestmenge", text: Binding(
-                                        get : { String(item.quantity) },
-                                        set : {
-                                            if let value = Int($0), value > 0 {
-                                                item.quantity = value
-                                            } else {
-                                                item.quantity = 1
-                                            }
-                                        }
-                                    ))
-                                    .keyboardType(.numberPad)
-                                    
-                                    Stepper("", value: $item.quantity, in: 1...100)
-                                        .labelsHidden()
-                                }
-                               
-                            }
-                            Spacer()
-                            VStack (alignment: .leading){
-                                Text("Einheit").font(.caption)
-                                Picker ("", selection: $selectedMinUnit) {
-                                    ForEach(Unit.allCases) { unit in
-                                        Text(unit.rawValue).tag(unit)
-                                    }
-                                }
-                                .pickerStyle(.navigationLink)
-                                //.labelsHidden()
-                            }
-                        }
-                    }
-               /* } else {
-                    Section {
-                        Button(action: {
-                            //item.ingredients = []
-                            isMinQuantityExpanded = true
-                        }, label: {
-                            HStack {
-                                Image(systemName: "plus")
-                                Text("Mindestmenge hinzufügen")
-                            }
-                        })
-                    }
-                }*/
-                
                 
                 //Nutrients
                 PantryItemNutrientsView(item: item)

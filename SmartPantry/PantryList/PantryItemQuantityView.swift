@@ -10,7 +10,6 @@ import SwiftUI
 struct PantryItemQuantityView: View {
     
     @Bindable var item: PantryItem
-    @State var selectedUnit: Unit = .piece
 
     var body: some View {
         HStack {
@@ -37,7 +36,7 @@ struct PantryItemQuantityView: View {
             Spacer()
             VStack (alignment: .leading){
                 Text("Einheit").font(.caption)
-                Picker ("", selection: $selectedUnit) {
+                Picker ("", selection: $item.unit) {
                     ForEach(Unit.allCases) { unit in
                         Text(unit.rawValue).tag(unit)
                     }
@@ -52,27 +51,37 @@ struct PantryItemQuantityView: View {
                 Text("Mindestmenge").font(.caption)
                 HStack {
                     TextField("Mindestmenge", text: Binding(
-                        get : { String(item.quantity) },
+                        get : { String(item.minQuantity) },
                         set : {
                             if let value = Int($0), value > 0 {
-                                item.quantity = value
+                                item.minQuantity = value
                             } else {
-                                item.quantity = 1
+                                item.minQuantity = 1
                             }
                         }
                     ))
                     .keyboardType(.numberPad)
                     
-                    Stepper("", value: $item.quantity, in: 1...100)
+                    Stepper("", value: $item.minQuantity, in: 1...100)
                         .labelsHidden()
                 }
                
             }
             Spacer()
+            VStack (alignment: .leading){
+                Text("Einheit").font(.caption)
+                Picker ("", selection: $item.unit) {
+                    ForEach(Unit.allCases) { unit in
+                        Text(unit.rawValue).tag(unit)
+                    }
+                }
+                .pickerStyle(.navigationLink)
+            }
         }
-            
     }
 }
+            
+
 
 #Preview {
     PantryItemQuantityView(item: PantryItem(name: "Salat", nutrients: PantryItem.Nutrients(calories: 30, carbohydrates: 5, protein: 2, fat: 1)))

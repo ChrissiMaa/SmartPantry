@@ -28,7 +28,8 @@ class PantryItem {
     private(set) var id: UUID
     var name: String
     var quantity: Int
-    //var unit: Unit
+    var minQuantity: Int
+    var unit: Unit
     var barcode: String?
     var expiryDate: Date?
     var dateOfPurchase: Date?
@@ -42,7 +43,8 @@ class PantryItem {
         self.id = UUID()
         self.name = name
         self.quantity = 1
-        //self.unit = .piece
+        self.minQuantity = 1
+        self.unit = .piece
         self.barcode = barcode
         self.expiryDate = expiryDate
         self.dateOfPurchase = dateOfPurchase
