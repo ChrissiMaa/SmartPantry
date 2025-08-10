@@ -189,18 +189,16 @@ extension CameraService: AVCaptureVideoDataOutputSampleBufferDelegate {
             textRecognitionRequest = VNRecognizeTextRequest { [weak self] request, error in
                 guard let self,
                       let results = request.results as? [VNRecognizedTextObservation] else { return }
-                print("Results: \(results)")
+                
                 for observation in results {
                     guard let candidate = observation.topCandidates(1).first else { continue }
                     let text = candidate.string
-                    print ("Text: \(text)")
                     let pattern = #"\b(\d{1,2}[./]\d{1,2}([./]\d{2,4})?)\b|\b(\d{1,2}[./]\d{2,4})\b"#
                     if let match = text.range(of: pattern, options: .regularExpression) {
                         let scannedDate = String(text[match])
                         DispatchQueue.main.async {
                             self.detectedDate = ExpiryDateParser.parseDateString(scannedDate)
                             print("MHD erkannt: \(scannedDate)")
-                            print("DetectedDate: \(self.detectedDate ?? Date())")
                             self.isScanning = false
                         }
                         break
@@ -223,14 +221,11 @@ extension CameraService: AVCaptureVideoDataOutputSampleBufferDelegate {
                     DispatchQueue.main.async {
                         self.detectedFruitVeg = topResult.identifier
                         self.detectedFruitVeg = self.cleanLabel(label: self.detectedFruitVeg ?? "")
-                        
                         print("Obst/Gemüse erkannt: \(topResult.identifier) mit \(Int(topResult.confidence * 100))%")
-                        //self.isScanning = false
                     }
                 } else {
                     DispatchQueue.main.async {
                         self.detectedFruitVeg = nil
-                        print("kein Kandidat über 80% – höchster war \(results.first?.confidence ?? 0)")
                         
                     }
                 }

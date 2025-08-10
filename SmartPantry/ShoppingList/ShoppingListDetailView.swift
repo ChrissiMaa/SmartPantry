@@ -51,7 +51,7 @@ struct ShoppingListDetailView: View {
                 }
             }
             .navigationTitle($shoppingList.name)
-            .navigationBarTitleDisplayMode(.inline) //TODO: Wieso geht das nicht mit .large ?
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItemGroup(placement: .navigationBarTrailing) {
                     EditButton()

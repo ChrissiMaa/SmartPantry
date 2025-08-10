@@ -44,7 +44,6 @@ struct PantryItemView: View {
                 Section {
                     PantryItemDatesView(item: item, isEditingExpiryDate: $isEditingExpiryDate, scannerSheet: false)
                 }
-                // TODO: Ggf. sicherstellen, dass nur Zahlen eingegeben werden dürfen
                 Section {
                     VStack(alignment: .leading) {
                         Text("Barcode").font(.caption)
