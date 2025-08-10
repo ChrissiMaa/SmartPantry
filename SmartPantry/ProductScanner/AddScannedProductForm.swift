@@ -66,8 +66,6 @@ struct AddScannedProductForm: View {
                     scannerSheet: true,
                     sheetDetent: $sheetDetent)
                 
-                // TODO: Ggf. sicherstellen, dass nur Zahlen eingegeben werden dürfen
-                
                 VStack(alignment: .leading) {
                     Text("Barcode").font(.caption)
                     TextField("Barcode", text: Binding(
@@ -88,27 +86,9 @@ struct AddScannedProductForm: View {
                         }
                     }
                     .pickerStyle(.segmented)
-                    //.colorMultiply(.green)
                 }
                 
-                //Mindestmenge
-                //if item.minimumQuantity != nil {
-                
             }
-            /* } else {
-             Section {
-             Button(action: {
-             //item.ingredients = []
-             isMinQuantityExpanded = true
-             }, label: {
-             HStack {
-             Image(systemName: "plus")
-             Text("Mindestmenge hinzufügen")
-             }
-             })
-             }
-             }*/
-            
             
             //Nutrients
             PantryItemNutrientsView(item: newPantryItem)
